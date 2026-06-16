@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0127FF"
+    tools:context=".Registro">
+
+
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:textSize="30sp"
+        android:textAlignment="center"
+        android:text="Crea tu cuenta"
+        android:textColor="#FCFCFF"
+        android:textStyle="bold"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:background="@drawable/custom_editex"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="20dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal"
+            android:padding="24dp"
+            >
+
+
+
+            <EditText
+                android:id="@+id/txtnombre"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:hint="Nombre:"
+                android:background="@drawable/custom_editex"
+                android:textSize="20sp"
+                android:minHeight="40dp"
+                android:padding="12dp"
+                android:drawableStart="@drawable/baseline_person_24"
+                android:drawablePadding="8dp"
+                android:inputType="textPersonName"
+                android:layout_marginTop="20dp"/>
+
+            <EditText
+                android:id="@+id/txtEmail"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:hint="Email:"
+                android:background="@drawable/custom_editex"
+                android:textSize="20sp"
+                android:drawableStart="@drawable/baseline_email_24"
+                android:drawablePadding="8dp"
+                android:minHeight="40dp"
+                android:padding="12dp"
+                android:inputType="textEmailAddress"
+                android:layout_marginTop="20dp"/>
+            <EditText
+                android:id="@+id/txtTelefono"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:hint="Telefono:"
+                android:background="@drawable/custom_editex"
+                android:textSize="20sp"
+                android:minHeight="40dp"
+                android:drawableStart="@drawable/baseline_phone_24"
+                android:drawablePadding="8dp"
+                android:padding="12dp"
+                android:inputType="phone"
+                android:layout_marginTop="20dp"/>
+            <EditText
+                android:id="@+id/txtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:hint="Contraseña:"
+                android:background="@drawable/custom_editex"
+                android:textSize="20sp"
+                android:minHeight="40dp"
+                android:padding="12dp"
+                android:drawableStart="@drawable/baseline_lock_24"
+                android:drawablePadding="8dp"
+                android:inputType="textPassword"
+                android:layout_marginTop="20dp"/>
+
+            <Button
+                android:id="@+id/btnregistrar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="20dp"
+                android:text="Registrar"
+                android:textSize="20sp"
+                app:cornerRadius="15dp"
+                android:backgroundTint="#0505A0"/>
+
+
+            <Button
+                android:id="@+id/btnregresar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="20dp"
+                android:text="Regresar"
+                android:textSize="18sp"
+                app:cornerRadius="15dp"
+                android:backgroundTint="#EB1708"/>
+
+
+
+        </LinearLayout>
+
+
+
+    </androidx.cardview.widget.CardView>
+
+
+</LinearLayout>
