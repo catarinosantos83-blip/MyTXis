@@ -44,7 +44,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             } else if (item.getItemId() == R.id.nav_actividades) {
 
-                // Más adelante abriremos ActividadesActivity
+                Intent intent = new Intent(
+                        MainActivity.this,
+                        ActividadesActivity.class
+                );
+
+                startActivity(intent);
 
                 return true;
 
