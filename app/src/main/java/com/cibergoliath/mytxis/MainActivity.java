@@ -21,7 +21,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
-    EditText txtLatitud, txtLongitud;
+    EditText txtOrigen, txtDestino;
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
 
@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        txtLatitud = findViewById(R.id.txtLatitud);
-        txtLongitud = findViewById(R.id.txtLongitud);
+        txtOrigen = findViewById(R.id.txtOrigen);
+        txtDestino = findViewById(R.id.txtDestino);
 
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
-        BottomNavigationView bottomNavigation;
+
 
         this.mMap.setOnMapClickListener(this);
         this.mMap.setOnMapLongClickListener(this);
@@ -91,15 +91,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
-        txtLatitud.setText(""+latLng.latitude);
-        txtLongitud.setText(""+latLng.longitude);
+        txtOrigen.setText(""+latLng.latitude);
+        txtDestino.setText(""+latLng.longitude);
 
 
     }
 
     @Override
     public void onMapLongClick(@NonNull LatLng latLng) {
-        txtLatitud.setText(""+latLng.latitude);
-        txtLongitud.setText(""+latLng.longitude);
+        txtOrigen.setText(""+latLng.latitude);
+        txtDestino.setText(""+latLng.longitude);
     }
 }
