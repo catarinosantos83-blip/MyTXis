@@ -47,11 +47,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         btnSolicitarViaje.setOnClickListener(v -> {
 
-            Toast.makeText(
+            String origen = txtOrigen.getText().toString();
+            String destino = txtDestino.getText().toString();
+            String referencia = edtReferencia.getText().toString();
+
+            Intent intent = new Intent(
                     MainActivity.this,
-                    "Viaje solicitado correctamente",
-                    Toast.LENGTH_LONG
-            ).show();
+                    ActividadesActivity.class
+            );
+
+            intent.putExtra("origen", origen);
+            intent.putExtra("destino", destino);
+            intent.putExtra("referencia", referencia);
+
+            startActivity(intent);
 
         });
 

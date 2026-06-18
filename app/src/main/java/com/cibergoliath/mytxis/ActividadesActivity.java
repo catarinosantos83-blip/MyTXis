@@ -7,17 +7,47 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.widget.TextView;
 
 import android.content.Intent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ActividadesActivity extends AppCompatActivity {
 
+    TextView txtOrigenActividad;
+    TextView txtDestinoActividad;
+    TextView txtReferenciaActividad;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_actividades);
+
+        txtOrigenActividad = findViewById(R.id.txtOrigenActividad);
+        txtDestinoActividad = findViewById(R.id.txtDestinoActividad);
+        txtReferenciaActividad = findViewById(R.id.txtReferenciaActividad);
+
+        txtOrigenActividad = findViewById(R.id.txtOrigenActividad);
+        txtDestinoActividad = findViewById(R.id.txtDestinoActividad);
+        txtReferenciaActividad = findViewById(R.id.txtReferenciaActividad);
+
+        String origen = getIntent().getStringExtra("origen");
+        String destino = getIntent().getStringExtra("destino");
+        String referencia = getIntent().getStringExtra("referencia");
+
+        if(origen != null){
+            txtOrigenActividad.setText("Origen: " + origen);
+        }
+
+        if(destino != null){
+            txtDestinoActividad.setText("Destino: " + destino);
+        }
+
+        if(referencia != null){
+            txtReferenciaActividad.setText("Referencia: " + referencia);
+        }
+
 
         BottomNavigationView bottomNavigation;
 

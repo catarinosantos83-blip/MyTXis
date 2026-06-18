@@ -30,22 +30,26 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
+            android:id="@+id/txtOrigenActividad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Origen: Centro"
             android:textStyle="bold"/>
 
         <TextView
+            android:id="@+id/txtDestinoActividad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Destino: Terminal de Autobuses"/>
 
         <TextView
+            android:id="@+id/txtReferenciaActividad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Referencia: Frente a la iglesia"/>
 
         <TextView
+            android:id="@+id/txtEstadoActividad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Estado: Pendiente"
