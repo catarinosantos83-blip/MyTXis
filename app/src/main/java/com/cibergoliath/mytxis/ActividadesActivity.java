@@ -37,11 +37,11 @@ public class ActividadesActivity extends AppCompatActivity {
         String referencia = getIntent().getStringExtra("referencia");
 
         if(origen != null){
-            txtOrigenActividad.setText("Origen: " + origen);
+            txtOrigenActividad.setText("Origen: Ubicación seleccionada");
         }
 
         if(destino != null){
-            txtDestinoActividad.setText("Destino: " + destino);
+            txtDestinoActividad.setText("Destino: Ubicación seleccionada");
         }
 
         if(referencia != null){
