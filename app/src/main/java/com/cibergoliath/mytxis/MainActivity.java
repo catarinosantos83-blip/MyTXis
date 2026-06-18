@@ -3,6 +3,9 @@ package com.cibergoliath.mytxis;
 import android.os.Bundle;
 import android.widget.EditText;
 
+import android.widget.Toast;
+import com.google.android.material.button.MaterialButton;
+
 import android.content.Intent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -22,6 +25,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
+    EditText edtReferencia;
+    MaterialButton btnSolicitarViaje;
+
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
 
@@ -34,7 +40,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtOrigen = findViewById(R.id.txtOrigen);
         txtDestino = findViewById(R.id.txtDestino);
 
+        edtReferencia = findViewById(R.id.edtReferencia);
+        btnSolicitarViaje = findViewById(R.id.btnSolicitarViaje);
+
         bottomNavigation = findViewById(R.id.bottomNavigation);
+
+        btnSolicitarViaje.setOnClickListener(v -> {
+
+            Toast.makeText(
+                    MainActivity.this,
+                    "Viaje solicitado correctamente",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        });
 
         bottomNavigation.setOnItemSelectedListener(item -> {
 
