@@ -8,6 +8,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.widget.TextView;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import android.content.Intent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -17,6 +20,9 @@ public class ActividadesActivity extends AppCompatActivity {
     TextView txtOrigenActividad;
     TextView txtDestinoActividad;
     TextView txtReferenciaActividad;
+
+    TextView txtFechaActividad;
+    TextView txtEstadoActividad;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +37,17 @@ public class ActividadesActivity extends AppCompatActivity {
         txtOrigenActividad = findViewById(R.id.txtOrigenActividad);
         txtDestinoActividad = findViewById(R.id.txtDestinoActividad);
         txtReferenciaActividad = findViewById(R.id.txtReferenciaActividad);
+
+        txtFechaActividad = findViewById(R.id.txtFechaActividad);
+        txtEstadoActividad = findViewById(R.id.txtEstadoActividad);
+
+        String fechaActual = new SimpleDateFormat(
+                "dd/MM/yyyy",
+                Locale.getDefault()
+        ).format(new Date());
+
+        txtFechaActividad.setText("Fecha: " + fechaActual);
+        txtEstadoActividad.setText("Estado: Pendiente");
 
         String origen = getIntent().getStringExtra("origen");
         String destino = getIntent().getStringExtra("destino");
