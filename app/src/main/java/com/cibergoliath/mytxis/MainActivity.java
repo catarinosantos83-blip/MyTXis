@@ -47,9 +47,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         btnSolicitarViaje.setOnClickListener(v -> {
 
+            String referencia = edtReferencia.getText().toString().trim();
+
+            if (referencia.isEmpty()) {
+
+                edtReferencia.setError("Capture una referencia");
+                edtReferencia.requestFocus();
+
+                return;
+            }
+
             String origen = txtOrigen.getText().toString();
             String destino = txtDestino.getText().toString();
-            String referencia = edtReferencia.getText().toString();
+            referencia = edtReferencia.getText().toString();
 
             Intent intent = new Intent(
                     MainActivity.this,
