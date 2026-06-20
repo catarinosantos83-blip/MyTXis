@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class UsuarioActivity extends AppCompatActivity {
 
     Button btnCerrarSesion;
+    Button btnConductor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +21,8 @@ public class UsuarioActivity extends AppCompatActivity {
         setContentView(R.layout.activity_usuario);
 
         btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
+
+        btnConductor = findViewById(R.id.btnConductor);
 
         BottomNavigationView bottomNavigation;
 
@@ -51,6 +54,17 @@ public class UsuarioActivity extends AppCompatActivity {
             }
 
             return false;
+        });
+
+        btnConductor.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    UsuarioActivity.this,
+                    RegistroConductorActivity.class
+            );
+
+            startActivity(intent);
+
         });
 
         btnCerrarSesion.setOnClickListener(v -> {
