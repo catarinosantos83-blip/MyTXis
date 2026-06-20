@@ -64,7 +64,7 @@
                 android:drawablePadding="8dp"
                 android:minHeight="40dp"
                 android:padding="12dp"
-                android:inputType="textEmailAddress"
+                android:inputType="text"
                 android:layout_marginTop="20dp"/>
             <EditText
                 android:id="@+id/txtModelo"
@@ -76,7 +76,7 @@
                 android:minHeight="40dp"
                 android:drawablePadding="8dp"
                 android:padding="12dp"
-                android:inputType="phone"
+                android:inputType="text"
                 android:layout_marginTop="20dp"/>
 
             <EditText
@@ -89,7 +89,7 @@
                 android:minHeight="40dp"
                 android:drawablePadding="8dp"
                 android:padding="12dp"
-                android:inputType="phone"
+                android:inputType="text"
                 android:layout_marginTop="20dp"/>
 
             <Button
