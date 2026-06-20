@@ -22,6 +22,10 @@ public class ConductorActivity extends AppCompatActivity {
     TextView txtDestino;
 
     Button btnActualizar;
+    Button btnAceptar;
+    Button btnRechazar;
+
+    TextView txtSolicitud;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +39,13 @@ public class ConductorActivity extends AppCompatActivity {
         txtCliente = findViewById(R.id.txtCliente);
         txtOrigen = findViewById(R.id.txtOrigen);
         txtDestino = findViewById(R.id.txtDestino);
+        txtSolicitud = findViewById(R.id.txtSolicitud);
 
 
         btnActualizar = findViewById(R.id.btnActualizar);
+        btnAceptar = findViewById(R.id.btnAceptar);
+        btnRechazar = findViewById(R.id.btnRechazar);
+
 
 
 
@@ -61,6 +69,30 @@ public class ConductorActivity extends AppCompatActivity {
             txtOrigen.setText("Origen: Centro");
 
             txtDestino.setText("Destino: Mercado Municipal");
+
+        });
+
+        btnAceptar.setOnClickListener(v -> {
+
+            txtCliente.setText("Cliente: En camino...");
+
+            txtOrigen.setText("Origen:");
+
+            txtDestino.setText("Destino:");
+
+            txtSolicitud.setText("Viaje aceptado");
+
+        });
+
+        btnRechazar.setOnClickListener(v -> {
+
+            txtSolicitud.setText("Solicitud rechazada");
+
+            txtCliente.setText("Cliente: Sin solicitudes");
+
+            txtOrigen.setText("Origen:");
+
+            txtDestino.setText("Destino:");
 
         });
 
