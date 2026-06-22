@@ -11,6 +11,7 @@ playServicesMaps = "18.1.0"
 retrofit = "2.9.0"
 
 
+
 [libraries]
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

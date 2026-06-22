@@ -3,6 +3,10 @@ package com.cibergoliath.mytxis;
 import android.os.Bundle;
 import android.widget.EditText;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 
@@ -57,20 +61,66 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return;
             }
 
-            String origen = txtOrigen.getText().toString();
-            String destino = txtDestino.getText().toString();
-            referencia = edtReferencia.getText().toString();
+            String origen = txtOrigen.getText().toString().trim();
+            String destino = txtDestino.getText().toString().trim();
 
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    ActividadesActivity.class
+            String email = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("email", "");
+
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
+
+            Call<String> call = apiService.solicitarViaje(
+                    email,
+                    origen,
+                    destino
             );
 
-            intent.putExtra("origen", origen);
-            intent.putExtra("destino", destino);
-            intent.putExtra("referencia", referencia);
+            call.enqueue(new Callback<String>() {
 
-            startActivity(intent);
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("success")) {
+
+                        Intent intent = new Intent(
+                                MainActivity.this,
+                                ActividadesActivity.class
+                        );
+
+                        intent.putExtra("origen", origen);
+                        intent.putExtra("destino", destino);
+                        intent.putExtra("referencia", referencia);
+
+                        startActivity(intent);
+
+                    } else {
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Error al solicitar el viaje",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
 
         });
 

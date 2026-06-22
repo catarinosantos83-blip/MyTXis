@@ -3,6 +3,10 @@ package com.cibergoliath.mytxis;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.Toast;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -89,15 +93,62 @@ public class ConductorActivity extends AppCompatActivity {
 
         btnActualizar.setOnClickListener(v -> {
 
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
 
+            Call<ViajeResponse> call =
+                    apiService.obtenerViajePendiente();
 
-            txtCliente.setText("Cliente: Juan Pérez");
+            call.enqueue(new Callback<ViajeResponse>() {
 
-            txtOrigen.setText("Origen: Centro");
+                @Override
+                public void onResponse(Call<ViajeResponse> call,
+                                       Response<ViajeResponse> response) {
 
-            txtDestino.setText("Destino: Mercado Municipal");
+                    if (response.isSuccessful()
+                            && response.body() != null) {
+
+                        ViajeResponse viaje = response.body();
+
+                        txtCliente.setText(
+                                "Cliente: " +
+                                        viaje.getUsuario_email());
+
+                        txtOrigen.setText(
+                                "Origen: " +
+                                        viaje.getPunto_partida());
+
+                        txtDestino.setText(
+                                "Destino: " +
+                                        viaje.getDestino());
+
+                    } else {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "No hay viajes pendientes",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ViajeResponse> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
 
         });
+
+
+
 
         btnAceptar.setOnClickListener(v -> {
 

@@ -5,6 +5,8 @@ import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
 
+import retrofit2.http.GET;
+
 public interface ApiService {
 
     @FormUrlEncoded
@@ -28,6 +30,17 @@ public interface ApiService {
     Call<String> actualizarTipoUsuario(
             @Field("email") String email
     );
+
+    @FormUrlEncoded
+    @POST("solicitar_viaje.php")
+    Call<String> solicitarViaje(
+            @Field("email") String email,
+            @Field("punto_partida") String puntoPartida,
+            @Field("destino") String destino
+    );
+
+    @GET("obtener_viaje_pendiente.php")
+    Call<ViajeResponse> obtenerViajePendiente();
 
     @POST("cerrar_sesion.php")
     Call<String> logout();
