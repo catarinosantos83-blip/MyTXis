@@ -8,6 +8,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.EditText;
@@ -89,12 +93,62 @@ public class RegistroConductorActivity extends AppCompatActivity {
 
         btnIngresar.setOnClickListener(v -> {
 
-            Intent intent = new Intent(
-                    RegistroConductorActivity.this,
-                    ConductorActivity.class
-            );
+            String email = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("email", "");
 
-            startActivity(intent);
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
+
+            Call<String> call = apiService.actualizarTipoUsuario(email);
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("ok")) {
+
+                        Toast.makeText(
+                                RegistroConductorActivity.this,
+                                "Ahora eres conductor",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        Intent intent = new Intent(
+                                RegistroConductorActivity.this,
+                                ConductorActivity.class
+                        );
+
+                        startActivity(intent);
+                        finish();
+
+                    } else {
+
+                        Toast.makeText(
+                                RegistroConductorActivity.this,
+                                "Error al actualizar usuario",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            RegistroConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
 
         });
 

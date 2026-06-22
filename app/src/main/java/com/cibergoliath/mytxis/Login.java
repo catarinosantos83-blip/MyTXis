@@ -132,6 +132,7 @@ public class Login extends AppCompatActivity {
                                     .edit()
                                     .putBoolean("logueado", true)
                                     .putString("tipo_usuario", "admin")
+                                    .putString("email", email)
                                     .apply();
 
                             Intent intent = new Intent(
@@ -149,6 +150,7 @@ public class Login extends AppCompatActivity {
                                     .edit()
                                     .putBoolean("logueado", true)
                                     .putString("tipo_usuario", "cliente")
+                                    .putString("email", email)
                                     .apply();
 
                             Intent intent = new Intent(
@@ -166,6 +168,7 @@ public class Login extends AppCompatActivity {
                                     .edit()
                                     .putBoolean("logueado", true)
                                     .putString("tipo_usuario", "conductor")
+                                    .putString("email", email)
                                     .apply();
 
                             Intent intent = new Intent(

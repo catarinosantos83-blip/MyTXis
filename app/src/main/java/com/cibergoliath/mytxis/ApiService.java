@@ -23,6 +23,12 @@ public interface ApiService {
             @Field("pass") String pass
     );
 
+    @FormUrlEncoded
+    @POST("actualizar_tipo_usuario.php")
+    Call<String> actualizarTipoUsuario(
+            @Field("email") String email
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }
