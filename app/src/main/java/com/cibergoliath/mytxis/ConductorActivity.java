@@ -6,6 +6,9 @@ import android.widget.Button;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import android.content.Intent;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -45,6 +48,30 @@ public class ConductorActivity extends AppCompatActivity {
         btnActualizar = findViewById(R.id.btnActualizar);
         btnAceptar = findViewById(R.id.btnAceptar);
         btnRechazar = findViewById(R.id.btnRechazar);
+
+        BottomNavigationView bottomNavigation;
+
+        bottomNavigation = findViewById(R.id.bottomNavigationConductor);
+
+        bottomNavigation.setSelectedItemId(R.id.nav_inicio_conductor);
+
+        bottomNavigation.setOnItemSelectedListener(item -> {
+
+            if (item.getItemId() == R.id.nav_inicio_conductor) {
+
+                return true;
+
+            } else if (item.getItemId() == R.id.nav_perfil_conductor) {
+
+                startActivity(new Intent(
+                        ConductorActivity.this,
+                        PerfilConductorActivity.class));
+
+                return true;
+            }
+
+            return false;
+        });
 
 
 

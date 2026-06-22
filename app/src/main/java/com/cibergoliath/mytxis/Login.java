@@ -38,12 +38,41 @@ public class Login extends AppCompatActivity {
                 MODE_PRIVATE
         ).getBoolean("logueado", false);
 
-        if(sesionActiva){
+        if (sesionActiva) {
 
-            Intent intent = new Intent(
-                    Login.this,
-                    MainActivity.class
-            );
+            String tipoUsuario = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("tipo_usuario", "");
+
+            Intent intent;
+
+            switch (tipoUsuario) {
+
+                case "admin":
+
+                    intent = new Intent(
+                            Login.this,
+                            MainAdminActivity.class
+                    );
+                    break;
+
+                case "conductor":
+
+                    intent = new Intent(
+                            Login.this,
+                            ConductorActivity.class
+                    );
+                    break;
+
+                default:
+
+                    intent = new Intent(
+                            Login.this,
+                            MainActivity.class
+                    );
+                    break;
+            }
 
             startActivity(intent);
             finish();
@@ -102,6 +131,7 @@ public class Login extends AppCompatActivity {
                             getSharedPreferences("sesion", MODE_PRIVATE)
                                     .edit()
                                     .putBoolean("logueado", true)
+                                    .putString("tipo_usuario", "admin")
                                     .apply();
 
                             Intent intent = new Intent(
@@ -118,6 +148,7 @@ public class Login extends AppCompatActivity {
                             getSharedPreferences("sesion", MODE_PRIVATE)
                                     .edit()
                                     .putBoolean("logueado", true)
+                                    .putString("tipo_usuario", "cliente")
                                     .apply();
 
                             Intent intent = new Intent(
@@ -134,12 +165,14 @@ public class Login extends AppCompatActivity {
                             getSharedPreferences("sesion", MODE_PRIVATE)
                                     .edit()
                                     .putBoolean("logueado", true)
+                                    .putString("tipo_usuario", "conductor")
                                     .apply();
 
                             Intent intent = new Intent(
                                     Login.this,
-                                    MainConductorActivity.class
+                                    ConductorActivity.class
                             );
+
 
                             startActivity(intent);
                             finish();
