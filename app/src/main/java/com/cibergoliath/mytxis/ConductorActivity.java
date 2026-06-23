@@ -53,6 +53,10 @@ public class ConductorActivity extends AppCompatActivity {
         btnAceptar = findViewById(R.id.btnAceptar);
         btnRechazar = findViewById(R.id.btnRechazar);
 
+        btnActualizar.setEnabled(false);
+        btnAceptar.setEnabled(false);
+        btnRechazar.setEnabled(false);
+
         BottomNavigationView bottomNavigation;
 
         bottomNavigation = findViewById(R.id.bottomNavigationConductor);
@@ -82,11 +86,26 @@ public class ConductorActivity extends AppCompatActivity {
 
         switchDisponible.setOnCheckedChangeListener((buttonView, isChecked) -> {
 
-
             if (isChecked) {
+
                 txtEstado.setText("Estado: Disponible");
+
+                btnActualizar.setEnabled(true);
+                btnAceptar.setEnabled(true);
+                btnRechazar.setEnabled(true);
+
             } else {
+
                 txtEstado.setText("Estado: Desconectado");
+
+                btnActualizar.setEnabled(false);
+                btnAceptar.setEnabled(false);
+                btnRechazar.setEnabled(false);
+
+                txtSolicitud.setText("No hay solicitudes pendientes");
+                txtCliente.setText("Cliente: Sin solicitudes");
+                txtOrigen.setText("Origen:");
+                txtDestino.setText("Destino:");
             }
 
         });
