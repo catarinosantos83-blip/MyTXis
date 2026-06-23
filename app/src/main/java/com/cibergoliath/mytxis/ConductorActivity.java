@@ -34,6 +34,8 @@ public class ConductorActivity extends AppCompatActivity {
 
     TextView txtSolicitud;
 
+    private int viajeId = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +157,8 @@ public class ConductorActivity extends AppCompatActivity {
                             && response.body() != null) {
 
                         ViajeResponse viaje = response.body();
+
+                        viajeId = viaje.getId();
 
                         txtCliente.setText(
                                 "Cliente: " +
