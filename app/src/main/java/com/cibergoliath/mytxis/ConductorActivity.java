@@ -201,13 +201,60 @@ public class ConductorActivity extends AppCompatActivity {
 
         btnAceptar.setOnClickListener(v -> {
 
-            txtCliente.setText("Cliente: En camino...");
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
 
-            txtOrigen.setText("Origen:");
 
-            txtDestino.setText("Destino:");
+                    String conductorEmail =
+                    getSharedPreferences("sesion", MODE_PRIVATE)
+                            .getString("email", "");
 
-            txtSolicitud.setText("Viaje aceptado");
+            Call<String> call =
+                    apiService.aceptarViaje(
+                            viajeId,
+                            conductorEmail
+                    );
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("success")) {
+
+                        txtSolicitud.setText("Viaje aceptado");
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Viaje aceptado correctamente",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    } else {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Error al aceptar viaje",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
 
         });
 

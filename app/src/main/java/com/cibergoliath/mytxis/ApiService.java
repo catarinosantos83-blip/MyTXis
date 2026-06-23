@@ -42,6 +42,13 @@ public interface ApiService {
     @GET("obtener_viaje_pendiente.php")
     Call<ViajeResponse> obtenerViajePendiente();
 
+    @FormUrlEncoded
+    @POST("aceptar_viaje.php")
+    Call<String> aceptarViaje(
+            @Field("id") int id,
+            @Field("conductor_email") String conductorEmail
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }
