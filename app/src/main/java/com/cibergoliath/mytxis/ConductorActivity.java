@@ -42,6 +42,11 @@ public class ConductorActivity extends AppCompatActivity {
 
         txtEstado = findViewById(R.id.txtEstado);
         switchDisponible = findViewById(R.id.switchDisponible);
+        boolean disponible =
+                getSharedPreferences("conductor", MODE_PRIVATE)
+                        .getBoolean("disponible", false);
+
+        switchDisponible.setChecked(disponible);
 
         txtCliente = findViewById(R.id.txtCliente);
         txtOrigen = findViewById(R.id.txtOrigen);
@@ -56,6 +61,19 @@ public class ConductorActivity extends AppCompatActivity {
         btnActualizar.setEnabled(false);
         btnAceptar.setEnabled(false);
         btnRechazar.setEnabled(false);
+
+        if (disponible) {
+
+            txtEstado.setText("Estado: Disponible");
+
+            btnActualizar.setEnabled(true);
+            btnAceptar.setEnabled(true);
+            btnRechazar.setEnabled(true);
+
+        } else {
+
+            txtEstado.setText("Estado: Desconectado");
+        }
 
         BottomNavigationView bottomNavigation;
 
@@ -88,6 +106,10 @@ public class ConductorActivity extends AppCompatActivity {
 
             if (isChecked) {
 
+                getSharedPreferences("conductor", MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("disponible", true)
+                        .apply();
                 txtEstado.setText("Estado: Disponible");
 
                 btnActualizar.setEnabled(true);
@@ -95,6 +117,10 @@ public class ConductorActivity extends AppCompatActivity {
                 btnRechazar.setEnabled(true);
 
             } else {
+                getSharedPreferences("conductor", MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("disponible", false)
+                        .apply();
 
                 txtEstado.setText("Estado: Desconectado");
 
