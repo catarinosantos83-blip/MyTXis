@@ -49,6 +49,16 @@ public interface ApiService {
             @Field("conductor_email") String conductorEmail
     );
 
+    @FormUrlEncoded
+    @POST("guardar_datos_conductor.php")
+    Call<String> guardarDatosConductor(
+            @Field("email") String email,
+            @Field("placa") String placa,
+            @Field("marca") String marca,
+            @Field("modelo") String modelo,
+            @Field("color") String color
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }

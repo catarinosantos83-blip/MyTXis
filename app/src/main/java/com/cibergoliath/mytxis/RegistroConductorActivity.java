@@ -83,6 +83,54 @@ public class RegistroConductorActivity extends AppCompatActivity {
 
             editor.apply();
 
+
+            String email = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("email", "");
+
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
+
+            Call<String> call = apiService.guardarDatosConductor(
+                    email,
+                    txtPlaca.getText().toString(),
+                    txtMarca.getText().toString(),
+                    txtModelo.getText().toString(),
+                    txtColor.getText().toString()
+            );
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("success")) {
+
+                        Toast.makeText(
+                                RegistroConductorActivity.this,
+                                "Datos guardados en MySQL",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            RegistroConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
+
             Toast.makeText(
                     this,
                     "Datos guardados correctamente",
