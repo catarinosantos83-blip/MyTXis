@@ -59,6 +59,12 @@ public interface ApiService {
             @Field("color") String color
     );
 
+    @FormUrlEncoded
+    @POST("obtener_conductor_cliente.php")
+    Call<ConductorInfoResponse> obtenerConductorCliente(
+            @Field("usuario_email") String usuarioEmail
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }

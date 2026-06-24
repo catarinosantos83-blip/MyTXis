@@ -7,6 +7,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.widget.TextView;
+
 import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 
@@ -31,6 +33,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     EditText txtOrigen, txtDestino;
     EditText edtReferencia;
     MaterialButton btnSolicitarViaje;
+    TextView txtConductor;
+    TextView txtVehiculo;
+    TextView txtPlaca;
+    TextView txtColor;
 
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
@@ -47,7 +53,72 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         edtReferencia = findViewById(R.id.edtReferencia);
         btnSolicitarViaje = findViewById(R.id.btnSolicitarViaje);
 
+        txtConductor = findViewById(R.id.txtConductor);
+        txtVehiculo = findViewById(R.id.txtVehiculo);
+        txtPlaca = findViewById(R.id.txtPlaca);
+        txtColor = findViewById(R.id.txtColor);
+
         bottomNavigation = findViewById(R.id.bottomNavigation);
+
+
+        String emailUsuario =
+                getSharedPreferences(
+                        "sesion",
+                        MODE_PRIVATE)
+                        .getString("email", "");
+
+        ApiService apiServiceConductor = RetrofitClient
+                .getClient()
+                .create(ApiService.class);
+
+        Call<ConductorInfoResponse> callConductor =
+                apiServiceConductor.obtenerConductorCliente(emailUsuario);
+
+
+
+
+
+
+        callConductor.enqueue(new Callback<ConductorInfoResponse>() {
+
+            @Override
+            public void onResponse(
+                    Call<ConductorInfoResponse> call,
+                    Response<ConductorInfoResponse> response) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    ConductorInfoResponse conductor =
+                            response.body();
+
+                    txtConductor.setText(
+                            "Conductor: " +
+                                    conductor.getNombre());
+
+                    txtVehiculo.setText(
+                            "Vehículo: " +
+                                    conductor.getMarca() +
+                                    " " +
+                                    conductor.getModelo());
+
+                    txtPlaca.setText(
+                            "Placa: " +
+                                    conductor.getPlaca());
+
+                    txtColor.setText(
+                            "Color: " +
+                                    conductor.getColor());
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    Call<ConductorInfoResponse> call,
+                    Throwable t) {
+
+            }
+        });
 
         btnSolicitarViaje.setOnClickListener(v -> {
 
