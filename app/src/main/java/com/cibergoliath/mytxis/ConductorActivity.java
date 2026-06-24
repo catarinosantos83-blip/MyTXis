@@ -260,16 +260,31 @@ public class ConductorActivity extends AppCompatActivity {
                                        Response<String> response) {
 
                     if (response.isSuccessful()
-                            && response.body() != null
-                            && response.body().trim().equals("success")) {
+                            && response.body() != null) {
 
-                        txtSolicitud.setText("Viaje aceptado");
+                        String resultado = response.body().trim();
 
-                        Toast.makeText(
-                                ConductorActivity.this,
-                                "Viaje aceptado correctamente",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        if (resultado.equals("success")) {
+
+                            txtSolicitud.setText("Viaje aceptado");
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "Viaje aceptado correctamente",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                        } else if (resultado.equals("ocupado")) {
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "Este viaje ya fue aceptado por otro conductor",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            txtSolicitud.setText(
+                                    "Viaje tomado por otro conductor");
+                        }
 
                     } else {
 
