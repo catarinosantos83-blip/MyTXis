@@ -65,6 +65,18 @@ public interface ApiService {
             @Field("usuario_email") String usuarioEmail
     );
 
+    @FormUrlEncoded
+    @POST("actualizar_estado_en_camino.php")
+    Call<String> iniciarViaje(
+            @Field("id") int id
+    );
+
+    @FormUrlEncoded
+    @POST("actualizar_estado_finalizado.php")
+    Call<String> finalizarViaje(
+            @Field("id") int id
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }

@@ -32,6 +32,9 @@ public class ConductorActivity extends AppCompatActivity {
     Button btnAceptar;
     Button btnRechazar;
 
+    Button btnIniciarViaje;
+    Button btnFinalizarViaje;
+
     TextView txtSolicitud;
 
     private int viajeId = 0;
@@ -50,6 +53,10 @@ public class ConductorActivity extends AppCompatActivity {
 
         switchDisponible.setChecked(disponible);
 
+
+
+
+
         txtCliente = findViewById(R.id.txtCliente);
         txtOrigen = findViewById(R.id.txtOrigen);
         txtDestino = findViewById(R.id.txtDestino);
@@ -60,9 +67,33 @@ public class ConductorActivity extends AppCompatActivity {
         btnAceptar = findViewById(R.id.btnAceptar);
         btnRechazar = findViewById(R.id.btnRechazar);
 
-        btnActualizar.setEnabled(false);
-        btnAceptar.setEnabled(false);
-        btnRechazar.setEnabled(false);
+        btnIniciarViaje = findViewById(R.id.btnIniciarViaje);
+
+        btnFinalizarViaje = findViewById(R.id.btnFinalizarViaje);
+
+        if (disponible) {
+
+            txtEstado.setText("Estado: Disponible");
+
+            btnActualizar.setEnabled(true);
+            btnAceptar.setEnabled(true);
+            btnRechazar.setEnabled(true);
+            btnIniciarViaje.setEnabled(true);
+            btnFinalizarViaje.setEnabled(true);
+
+        } else {
+
+            txtEstado.setText("Estado: Desconectado");
+
+            btnActualizar.setEnabled(false);
+            btnAceptar.setEnabled(false);
+            btnRechazar.setEnabled(false);
+            btnIniciarViaje.setEnabled(false);
+            btnFinalizarViaje.setEnabled(false);
+        }
+
+
+
 
         if (disponible) {
 
@@ -118,6 +149,9 @@ public class ConductorActivity extends AppCompatActivity {
                 btnAceptar.setEnabled(true);
                 btnRechazar.setEnabled(true);
 
+                btnIniciarViaje.setEnabled(true);
+                btnFinalizarViaje.setEnabled(true);
+
             } else {
                 getSharedPreferences("conductor", MODE_PRIVATE)
                         .edit()
@@ -129,6 +163,9 @@ public class ConductorActivity extends AppCompatActivity {
                 btnActualizar.setEnabled(false);
                 btnAceptar.setEnabled(false);
                 btnRechazar.setEnabled(false);
+
+                btnIniciarViaje.setEnabled(false);
+                btnFinalizarViaje.setEnabled(false);
 
                 txtSolicitud.setText("No hay solicitudes pendientes");
                 txtCliente.setText("Cliente: Sin solicitudes");
@@ -257,6 +294,124 @@ public class ConductorActivity extends AppCompatActivity {
             });
 
         });
+
+        btnIniciarViaje.setOnClickListener(v -> {
+
+            if (viajeId == 0) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Primero acepte un viaje",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
+
+            Call<String> call = apiService.iniciarViaje(viajeId);
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("success")) {
+
+                        txtSolicitud.setText("Viaje en camino");
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Viaje iniciado",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
+
+        });
+
+        btnFinalizarViaje.setOnClickListener(v -> {
+
+            if (viajeId == 0) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "No hay viaje activo",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
+
+            Call<String> call = apiService.finalizarViaje(viajeId);
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("success")) {
+
+                        txtSolicitud.setText(
+                                "No hay solicitudes pendientes");
+
+                        txtCliente.setText(
+                                "Cliente: Sin solicitudes");
+
+                        txtOrigen.setText("Origen:");
+
+                        txtDestino.setText("Destino:");
+
+                        viajeId = 0;
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Viaje finalizado",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
+
+        });
+
+
 
         btnRechazar.setOnClickListener(v -> {
 
