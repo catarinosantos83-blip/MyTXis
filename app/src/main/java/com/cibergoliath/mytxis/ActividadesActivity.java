@@ -12,6 +12,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import android.content.Intent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -41,29 +45,60 @@ public class ActividadesActivity extends AppCompatActivity {
         txtFechaActividad = findViewById(R.id.txtFechaActividad);
         txtEstadoActividad = findViewById(R.id.txtEstadoActividad);
 
-        String fechaActual = new SimpleDateFormat(
-                "dd/MM/yyyy",
-                Locale.getDefault()
-        ).format(new Date());
+        String emailUsuario =
+                getSharedPreferences(
+                        "sesion",
+                        MODE_PRIVATE
+                ).getString("email", "");
 
-        txtFechaActividad.setText("Fecha: " + fechaActual);
-        txtEstadoActividad.setText("Estado: Pendiente");
+        ApiService apiService =
+                RetrofitClient
+                        .getClient()
+                        .create(ApiService.class);
 
-        String origen = getIntent().getStringExtra("origen");
-        String destino = getIntent().getStringExtra("destino");
-        String referencia = getIntent().getStringExtra("referencia");
+        Call<UltimoViajeResponse> call =
+                apiService.obtenerUltimoViaje(
+                        emailUsuario
+                );
 
-        if(origen != null){
-            txtOrigenActividad.setText("Origen: Ubicación seleccionada");
-        }
+        call.enqueue(new Callback<UltimoViajeResponse>() {
 
-        if(destino != null){
-            txtDestinoActividad.setText("Destino: Ubicación seleccionada");
-        }
+            @Override
+            public void onResponse(
+                    Call<UltimoViajeResponse> call,
+                    Response<UltimoViajeResponse> response) {
 
-        if(referencia != null){
-            txtReferenciaActividad.setText("Referencia: " + referencia);
-        }
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    UltimoViajeResponse viaje =
+                            response.body();
+
+                    txtOrigenActividad.setText(
+                            "Origen: "
+                                    + viaje.getPunto_partida());
+
+                    txtDestinoActividad.setText(
+                            "Destino: "
+                                    + viaje.getDestino());
+
+                    txtEstadoActividad.setText(
+                            "Estado: "
+                                    + viaje.getEstado());
+
+                    txtFechaActividad.setText(
+                            "Fecha: "
+                                    + viaje.getFecha());
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    Call<UltimoViajeResponse> call,
+                    Throwable t) {
+
+            }
+        });
 
 
         BottomNavigationView bottomNavigation;

@@ -92,23 +92,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     ConductorInfoResponse conductor =
                             response.body();
 
-                    txtConductor.setText(
-                            "Conductor: " +
-                                    conductor.getNombre());
+                    if (conductor.getNombre() == null
+                            || conductor.getNombre().isEmpty()) {
 
-                    txtVehiculo.setText(
-                            "Vehículo: " +
-                                    conductor.getMarca() +
-                                    " " +
-                                    conductor.getModelo());
+                        txtConductor.setText("Conductor:");
+                        txtVehiculo.setText("Vehículo:");
+                        txtPlaca.setText("Placa:");
+                        txtColor.setText("Color:");
 
-                    txtPlaca.setText(
-                            "Placa: " +
-                                    conductor.getPlaca());
+                    } else {
 
-                    txtColor.setText(
-                            "Color: " +
-                                    conductor.getColor());
+                        txtConductor.setText(
+                                "Conductor: " +
+                                        conductor.getNombre());
+
+                        txtVehiculo.setText(
+                                "Vehículo: " +
+                                        conductor.getMarca() +
+                                        " " +
+                                        conductor.getModelo());
+
+                        txtPlaca.setText(
+                                "Placa: " +
+                                        conductor.getPlaca());
+
+                        txtColor.setText(
+                                "Color: " +
+                                        conductor.getColor());
+                    }
                 }
             }
 

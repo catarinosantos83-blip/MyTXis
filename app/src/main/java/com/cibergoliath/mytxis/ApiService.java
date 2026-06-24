@@ -77,6 +77,18 @@ public interface ApiService {
             @Field("id") int id
     );
 
+    @FormUrlEncoded
+    @POST("obtener_ultimo_viaje.php")
+    Call<UltimoViajeResponse> obtenerUltimoViaje(
+            @Field("usuario_email") String usuarioEmail
+    );
+
+    @FormUrlEncoded
+    @POST("obtener_usuario.php")
+    Call<UsuarioResponse> obtenerUsuario(
+            @Field("email") String email
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }
