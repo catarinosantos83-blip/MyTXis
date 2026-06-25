@@ -36,7 +36,8 @@ public interface ApiService {
     Call<String> solicitarViaje(
             @Field("email") String email,
             @Field("punto_partida") String puntoPartida,
-            @Field("destino") String destino
+            @Field("destino") String destino,
+            @Field("referencia") String referencia
     );
 
     @GET("obtener_viaje_pendiente.php")

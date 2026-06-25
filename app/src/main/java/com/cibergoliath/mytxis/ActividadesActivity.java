@@ -38,9 +38,6 @@ public class ActividadesActivity extends AppCompatActivity {
         txtDestinoActividad = findViewById(R.id.txtDestinoActividad);
         txtReferenciaActividad = findViewById(R.id.txtReferenciaActividad);
 
-        txtOrigenActividad = findViewById(R.id.txtOrigenActividad);
-        txtDestinoActividad = findViewById(R.id.txtDestinoActividad);
-        txtReferenciaActividad = findViewById(R.id.txtReferenciaActividad);
 
         txtFechaActividad = findViewById(R.id.txtFechaActividad);
         txtEstadoActividad = findViewById(R.id.txtEstadoActividad);
@@ -81,6 +78,10 @@ public class ActividadesActivity extends AppCompatActivity {
                     txtDestinoActividad.setText(
                             "Destino: "
                                     + viaje.getDestino());
+
+                    txtReferenciaActividad.setText(
+                            "Referencia: "
+                                    + viaje.getReferencia());
 
                     txtEstadoActividad.setText(
                             "Estado: "
