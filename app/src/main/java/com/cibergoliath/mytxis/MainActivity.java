@@ -50,6 +50,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtOrigen = findViewById(R.id.txtOrigen);
         txtDestino = findViewById(R.id.txtDestino);
 
+        txtOrigen.setFocusable(false);
+        txtOrigen.setClickable(true);
+
+        txtDestino.setFocusable(false);
+        txtDestino.setClickable(true);
+
+
+        txtOrigen.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    MapaActivity.class
+            );
+
+            startActivity(intent);
+
+        });
+
         edtReferencia = findViewById(R.id.edtReferencia);
         btnSolicitarViaje = findViewById(R.id.btnSolicitarViaje);
 

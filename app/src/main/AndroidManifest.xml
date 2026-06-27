@@ -15,6 +15,14 @@
         android:theme="@style/Theme.MyTXis"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
+
+        <activity
+            android:name=".MapaActivity"
+            android:exported="false" />
         <activity
             android:name=".PerfilConductorActivity"
             android:exported="false" />
@@ -49,12 +57,8 @@
             </intent-filter>
         </activity>
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="tu_llave_de_google_aqui" />
-        <meta-data
-            android:name="com.mapbox.token"
-            android:value="${mapboxDownloadsToken}" />
+
+
 
         <activity
             android:name=".MainActivity"

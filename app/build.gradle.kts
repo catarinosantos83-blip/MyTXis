@@ -1,6 +1,12 @@
+
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
 }
+
+val localProperties = Properties()
+localProperties.load(rootProject.file("local.properties").inputStream())
+
 
 android {
     namespace = "com.cibergoliath.mytxis"
@@ -13,7 +19,11 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        manifestPlaceholders += mapOf("mapboxDownloadsToken" to (project.findProperty("MAPBOX_DOWNLOADS_TOKEN")?.toString() ?: ""))
+        resValue(
+            "string",
+            "google_maps_key",
+            localProperties.getProperty("MAPS_API_KEY")
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
