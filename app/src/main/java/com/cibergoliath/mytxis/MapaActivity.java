@@ -44,6 +44,9 @@ public class MapaActivity extends AppCompatActivity
         btnConfirmarUbicacion =
                 findViewById(R.id.btnConfirmarUbicacion);
 
+        btnConfirmarUbicacion.setEnabled(false);
+
+
         SupportMapFragment mapFragment =
                 (SupportMapFragment)
                         getSupportFragmentManager()
@@ -76,6 +79,27 @@ public class MapaActivity extends AppCompatActivity
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
+
+        puntoSeleccionado = latLng;
+
+        if (marcador != null) {
+            marcador.remove();
+        }
+
+        marcador = mMap.addMarker(
+                new MarkerOptions()
+                        .position(latLng)
+                        .title("Origen seleccionado")
+        );
+
+        mMap.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                        latLng,
+                        17
+                )
+        );
+
+        btnConfirmarUbicacion.setEnabled(true);
 
     }
 }
