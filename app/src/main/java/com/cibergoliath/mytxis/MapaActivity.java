@@ -44,6 +44,23 @@ public class MapaActivity extends AppCompatActivity
         btnConfirmarUbicacion =
                 findViewById(R.id.btnConfirmarUbicacion);
 
+        btnConfirmarUbicacion.setOnClickListener(v -> {
+
+            if (puntoSeleccionado == null) {
+                return;
+            }
+
+            Intent intent = new Intent();
+
+            intent.putExtra("latitud", puntoSeleccionado.latitude);
+            intent.putExtra("longitud", puntoSeleccionado.longitude);
+
+            setResult(RESULT_OK, intent);
+
+            finish();
+
+        });
+
         btnConfirmarUbicacion.setEnabled(false);
 
 

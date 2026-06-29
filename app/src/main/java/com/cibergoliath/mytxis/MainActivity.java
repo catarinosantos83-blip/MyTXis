@@ -29,6 +29,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import android.app.Activity;
+
+import com.cibergoliath.mytxis.utils.GeocoderHelper;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
     EditText edtReferencia;
@@ -40,6 +46,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
+
+    private String tipoSeleccion = "";
+
+    private final ActivityResultLauncher<Intent> mapaLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+
+                        if (result.getResultCode() == Activity.RESULT_OK
+                                && result.getData() != null) {
+
+                            double latitud =
+                                    result.getData().getDoubleExtra("latitud", 0);
+
+                            double longitud =
+                                    result.getData().getDoubleExtra("longitud", 0);
+
+                            String direccion =
+                                    GeocoderHelper.obtenerDireccion(
+                                            MainActivity.this,
+                                            latitud,
+                                            longitud
+                                    );
+
+                            if (tipoSeleccion.equals("ORIGEN")) {
+
+                                txtOrigen.setText(direccion);
+
+                            } else if (tipoSeleccion.equals("DESTINO")) {
+
+                                txtDestino.setText(direccion);
+
+                            }
+
+                        }
+
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +102,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         txtOrigen.setOnClickListener(v -> {
 
+            tipoSeleccion = "ORIGEN";
+
             Intent intent = new Intent(
                     MainActivity.this,
                     MapaActivity.class
             );
 
-            startActivity(intent);
+            intent.putExtra("tipo","ORIGEN");
+
+            mapaLauncher.launch(intent);
+
+        });
+
+        txtDestino.setOnClickListener(v -> {
+
+            tipoSeleccion = "DESTINO";
+
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    MapaActivity.class
+            );
+
+            intent.putExtra("tipo", "DESTINO");
+
+            mapaLauncher.launch(intent);
 
         });
 
