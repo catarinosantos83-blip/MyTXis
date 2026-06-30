@@ -6,6 +6,8 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
 
 import retrofit2.http.GET;
+import retrofit2.http.Query;
+import okhttp3.ResponseBody;
 
 public interface ApiService {
 
@@ -88,6 +90,12 @@ public interface ApiService {
     @POST("obtener_usuario.php")
     Call<UsuarioResponse> obtenerUsuario(
             @Field("email") String email
+    );
+
+    @GET("obtener_ruta.php")
+    Call<ResponseBody> obtenerRuta(
+            @Query("origen") String origen,
+            @Query("destino") String destino
     );
 
     @POST("cerrar_sesion.php")
