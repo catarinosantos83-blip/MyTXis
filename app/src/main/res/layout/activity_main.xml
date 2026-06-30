@@ -34,6 +34,29 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtOrigen" />
+    <TextView
+        android:id="@+id/txtDistancia"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Distancia:"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="6dp"
+        app:layout_constraintTop_toBottomOf="@id/txtDestino"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/txtTiempo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tiempo:"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/txtDistancia"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <fragment
         android:id="@+id/map"
@@ -43,7 +66,7 @@
         android:layout_marginTop="15dp"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        app:layout_constraintTop_toBottomOf="@+id/txtDestino"
+        app:layout_constraintTop_toBottomOf="@id/txtTiempo"
         app:layout_constraintBottom_toTopOf="@id/edtReferencia"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

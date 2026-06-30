@@ -42,6 +42,11 @@ import com.google.maps.android.PolyUtil;
 
 import java.util.List;
 import android.graphics.Color;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.cibergoliath.mytxis.models.Route;
+import com.cibergoliath.mytxis.models.Leg;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
@@ -51,9 +56,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView txtVehiculo;
     TextView txtPlaca;
     TextView txtColor;
+    TextView txtDistancia;
+    TextView txtTiempo;
 
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
+
+    private Polyline rutaActual;
 
     private String tipoSeleccion = "";
 
@@ -163,6 +172,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtVehiculo = findViewById(R.id.txtVehiculo);
         txtPlaca = findViewById(R.id.txtPlaca);
         txtColor = findViewById(R.id.txtColor);
+
+        txtDistancia = findViewById(R.id.txtDistancia);
+        txtTiempo = findViewById(R.id.txtTiempo);
 
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
@@ -380,6 +392,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         && response.body().getRoutes() != null
                         && !response.body().getRoutes().isEmpty()) {
 
+                    Route route = response.body()
+                            .getRoutes()
+                            .get(0);
+
+                    Leg leg = route
+                            .getLegs()
+                            .get(0);
+
+                    String distancia = leg
+                            .getDistance()
+                            .getText();
+
+                    String tiempo = leg
+                            .getDuration()
+                            .getText();
+
+                    txtDistancia.setText("📏 Distancia: " + distancia);
+
+                    txtTiempo.setText("⏱ Tiempo: " + tiempo);
+
                     String polyline =
                             response.body()
                                     .getRoutes()
@@ -389,12 +421,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     List<LatLng> puntos =
                             PolyUtil.decode(polyline);
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-                    mMap.addPolyline(
+                    for (LatLng punto : puntos) {
+                        builder.include(punto);
+                    }
+
+                    LatLngBounds bounds = builder.build();
+
+                    if (rutaActual != null) {
+                        rutaActual.remove();
+                    }
+
+                    rutaActual = mMap.addPolyline(
                             new PolylineOptions()
                                     .addAll(puntos)
                                     .width(12)
                                     .color(Color.BLUE)
+                    );
+                    mMap.animateCamera(
+                            CameraUpdateFactory.newLatLngBounds(
+                                    bounds,
+                                    150
+                            )
                     );
 
 
