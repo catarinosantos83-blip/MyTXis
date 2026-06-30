@@ -9,6 +9,7 @@ activity = "1.8.2"
 constraintlayout = "2.2.1"
 playServicesMaps = "18.1.0"
 retrofit = "2.9.0"
+mapsUtils = "3.9.0"
 
 
 
@@ -24,6 +25,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
+maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "mapsUtils" }
 
 
 

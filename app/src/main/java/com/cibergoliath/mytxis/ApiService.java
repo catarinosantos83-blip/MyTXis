@@ -7,7 +7,7 @@ import retrofit2.http.POST;
 
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-import okhttp3.ResponseBody;
+import com.cibergoliath.mytxis.models.DirectionsResponse;
 
 public interface ApiService {
 
@@ -93,7 +93,7 @@ public interface ApiService {
     );
 
     @GET("obtener_ruta.php")
-    Call<ResponseBody> obtenerRuta(
+    Call<DirectionsResponse> obtenerRuta(
             @Query("origen") String origen,
             @Query("destino") String destino
     );

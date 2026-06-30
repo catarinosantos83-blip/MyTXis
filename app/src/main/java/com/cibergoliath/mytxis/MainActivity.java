@@ -35,6 +35,14 @@ import android.app.Activity;
 
 import com.cibergoliath.mytxis.utils.GeocoderHelper;
 
+import com.cibergoliath.mytxis.models.DirectionsResponse;
+
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
+
+import java.util.List;
+import android.graphics.Color;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
     EditText edtReferencia;
@@ -48,6 +56,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     BottomNavigationView bottomNavigation;
 
     private String tipoSeleccion = "";
+
+    private double origenLat;
+    private double origenLng;
+
+    private double destinoLat;
+    private double destinoLng;
 
     private final ActivityResultLauncher<Intent> mapaLauncher =
             registerForActivityResult(
@@ -72,11 +86,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             if (tipoSeleccion.equals("ORIGEN")) {
 
+                                origenLat = latitud;
+                                origenLng = longitud;
+
                                 txtOrigen.setText(direccion);
 
                             } else if (tipoSeleccion.equals("DESTINO")) {
 
+                                destinoLat = latitud;
+                                destinoLng = longitud;
+
                                 txtDestino.setText(direccion);
+
+                            }
+                            if (!txtOrigen.getText().toString().isEmpty()
+                                    && !txtDestino.getText().toString().isEmpty()) {
+
+                                solicitarRuta();
 
                             }
 
@@ -322,6 +348,83 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
+    }
+    private void solicitarRuta() {
+
+        String origen = origenLat + "," + origenLng;
+        String destino = destinoLat + "," + destinoLng;
+
+        ApiService apiService = RetrofitClient
+                .getClient()
+                .create(ApiService.class);
+
+        Call<DirectionsResponse> call =
+                apiService.obtenerRuta(origen, destino);
+
+        call.enqueue(new Callback<DirectionsResponse>() {
+
+            @Override
+            public void onResponse(
+                    Call<DirectionsResponse> call,
+                    Response<DirectionsResponse> response) {
+
+                Toast.makeText(
+                        MainActivity.this,
+                        "Código: " + response.code(),
+                        Toast.LENGTH_LONG
+                ).show();
+
+                if (response.isSuccessful()
+                        && response.body() != null
+                        && response.body().getRoutes() != null
+                        && !response.body().getRoutes().isEmpty()) {
+
+                    String polyline =
+                            response.body()
+                                    .getRoutes()
+                                    .get(0)
+                                    .getOverviewPolyline()
+                                    .getPoints();
+
+                    List<LatLng> puntos =
+                            PolyUtil.decode(polyline);
+
+                    mMap.addPolyline(
+                            new PolylineOptions()
+                                    .addAll(puntos)
+                                    .width(12)
+                                    .color(Color.BLUE)
+                    );
+
+
+
+                } else {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Error del servidor",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(
+                    Call<DirectionsResponse> call,
+                    Throwable t) {
+
+                Toast.makeText(
+                        MainActivity.this,
+                        t.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+
+            }
+
+        });
 
     }
 

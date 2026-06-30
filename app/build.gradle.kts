@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.converter.scalars)
+    implementation(libs.maps.utils)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
