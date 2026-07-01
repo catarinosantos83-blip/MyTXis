@@ -19,6 +19,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+
+import android.location.Location;
+import android.widget.Toast;
+
+import com.cibergoliath.mytxis.location.LocationHelper;
+
 public class ConductorActivity extends AppCompatActivity {
 
     TextView txtEstado;
@@ -37,6 +49,37 @@ public class ConductorActivity extends AppCompatActivity {
 
     TextView txtSolicitud;
 
+    private LocationHelper locationHelper;
+    private final ActivityResultLauncher<String> locationPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(),
+                    isGranted -> {
+
+                        if (isGranted) {
+
+                            Toast.makeText(
+                                    this,
+                                    "Permiso de ubicación concedido",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            obtenerUbicacionConductor();
+
+
+
+                        } else {
+
+                            Toast.makeText(
+                                    this,
+                                    "Se necesita el permiso de ubicación",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                        }
+
+                    }
+            );
+
     private int viajeId = 0;
 
     @Override
@@ -44,6 +87,23 @@ public class ConductorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_conductor);
+
+        locationHelper = new LocationHelper(this);
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            obtenerUbicacionConductor();
+
+        } else {
+
+            locationPermissionLauncher.launch(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            );
+
+        }
 
         txtEstado = findViewById(R.id.txtEstado);
         switchDisponible = findViewById(R.id.switchDisponible);
@@ -437,6 +497,89 @@ public class ConductorActivity extends AppCompatActivity {
             txtOrigen.setText("Origen:");
 
             txtDestino.setText("Destino:");
+
+        });
+
+    }
+    private void obtenerUbicacionConductor() {
+
+        locationHelper.obtenerUbicacionActual(
+                new LocationHelper.OnLocationResult() {
+
+                    @Override
+                    public void onLocationReceived(Location location) {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Lat: " + location.getLatitude() +
+                                        "\nLng: " + location.getLongitude(),
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        enviarUbicacionAlServidor(
+                                location.getLatitude(),
+                                location.getLongitude()
+                        );
+
+                    }
+
+                    @Override
+                    public void onError(String mensaje) {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                mensaje,
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+                });
+
+    }
+    private void enviarUbicacionAlServidor(double latitud, double longitud) {
+
+        String email = getSharedPreferences("usuario", MODE_PRIVATE)
+                .getString("email", "");
+
+        ApiService apiService =
+                RetrofitClient.getClient().create(ApiService.class);
+
+        Call<String> call =
+                apiService.actualizarUbicacionConductor(
+                        email,
+                        latitud,
+                        longitud
+                );
+
+        call.enqueue(new Callback<String>() {
+
+            @Override
+            public void onResponse(Call<String> call,
+                                   Response<String> response) {
+
+                if (response.isSuccessful()) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            response.body(),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<String> call,
+                                  Throwable t) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        t.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+
+            }
 
         });
 
