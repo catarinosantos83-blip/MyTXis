@@ -98,6 +98,18 @@ public interface ApiService {
             @Query("destino") String destino
     );
 
+    @FormUrlEncoded
+    @POST("actualizar_ubicacion_conductor.php")
+    Call<String> actualizarUbicacionConductor(
+
+            @Field("conductor_email") String conductorEmail,
+
+            @Field("latitud") double latitud,
+
+            @Field("longitud") double longitud
+
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }

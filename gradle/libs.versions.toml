@@ -8,6 +8,7 @@ material = "1.13.0"
 activity = "1.8.2"
 constraintlayout = "2.2.1"
 playServicesMaps = "18.1.0"
+playServicesLocation = "21.3.0"
 retrofit = "2.9.0"
 mapsUtils = "3.9.0"
 
@@ -15,6 +16,7 @@ mapsUtils = "3.9.0"
 
 [libraries]
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
