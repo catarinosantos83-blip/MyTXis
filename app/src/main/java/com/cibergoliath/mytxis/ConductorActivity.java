@@ -509,13 +509,6 @@ public class ConductorActivity extends AppCompatActivity {
                     @Override
                     public void onLocationReceived(Location location) {
 
-                        Toast.makeText(
-                                ConductorActivity.this,
-                                "Lat: " + location.getLatitude() +
-                                        "\nLng: " + location.getLongitude(),
-                                Toast.LENGTH_LONG
-                        ).show();
-
                         enviarUbicacionAlServidor(
                                 location.getLatitude(),
                                 location.getLongitude()
@@ -559,11 +552,7 @@ public class ConductorActivity extends AppCompatActivity {
 
                 if (response.isSuccessful()) {
 
-                    Toast.makeText(
-                            ConductorActivity.this,
-                            response.body(),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    // Ubicación enviada correctamente
 
                 }
 
