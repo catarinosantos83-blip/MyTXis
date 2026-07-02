@@ -27,7 +27,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 
 import android.location.Location;
-import android.widget.Toast;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.cibergoliath.mytxis.location.LocationHelper;
 
@@ -50,6 +51,10 @@ public class ConductorActivity extends AppCompatActivity {
     TextView txtSolicitud;
 
     private LocationHelper locationHelper;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    private Runnable runnableUbicacion;
+
     private final ActivityResultLauncher<String> locationPermissionLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.RequestPermission(),
@@ -90,6 +95,8 @@ public class ConductorActivity extends AppCompatActivity {
 
         locationHelper = new LocationHelper(this);
 
+        iniciarActualizacionUbicacion();
+
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -113,8 +120,44 @@ public class ConductorActivity extends AppCompatActivity {
 
         switchDisponible.setChecked(disponible);
 
+        switchDisponible.setOnCheckedChangeListener((buttonView, isChecked) -> {
 
+            getSharedPreferences("conductor", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("disponible", isChecked)
+                    .apply();
 
+            if (isChecked) {
+
+                txtEstado.setText("Estado: Disponible");
+
+                btnActualizar.setEnabled(true);
+                btnAceptar.setEnabled(true);
+                btnRechazar.setEnabled(true);
+                btnIniciarViaje.setEnabled(true);
+                btnFinalizarViaje.setEnabled(true);
+
+                iniciarActualizacionUbicacion();
+
+            } else {
+
+                txtEstado.setText("Estado: Desconectado");
+
+                btnActualizar.setEnabled(false);
+                btnAceptar.setEnabled(false);
+                btnRechazar.setEnabled(false);
+                btnIniciarViaje.setEnabled(false);
+                btnFinalizarViaje.setEnabled(false);
+
+                detenerActualizacionUbicacion();
+
+            }
+
+            if (disponible) {
+                iniciarActualizacionUbicacion();
+            }
+
+        });
 
 
         txtCliente = findViewById(R.id.txtCliente);
@@ -571,6 +614,41 @@ public class ConductorActivity extends AppCompatActivity {
             }
 
         });
+
+    }
+
+    private void iniciarActualizacionUbicacion() {
+
+        runnableUbicacion = new Runnable() {
+
+            @Override
+            public void run() {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Handler funcionando",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                obtenerUbicacionConductor();
+
+                handler.postDelayed(this, 5000);
+
+            }
+
+        };
+
+        handler.post(runnableUbicacion);
+
+    }
+
+    private void detenerActualizacionUbicacion() {
+
+        if (runnableUbicacion != null) {
+
+            handler.removeCallbacks(runnableUbicacion);
+
+        }
 
     }
 }
