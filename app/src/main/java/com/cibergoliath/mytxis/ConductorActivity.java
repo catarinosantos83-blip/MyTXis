@@ -87,15 +87,47 @@ public class ConductorActivity extends AppCompatActivity {
 
     private int viajeId = 0;
 
+
+
+    //inicia el segundo oncreate refactorizado//
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_conductor);
 
+        inicializarComponentes();
+        configurarPermisos();
+        configurarEstadoInicial();
+        configurarSwitch();
+
+        configurarBottomNavigation();
+        configurarEventos();
+    }
+    private void inicializarComponentes() {
+
         locationHelper = new LocationHelper(this);
 
-        iniciarActualizacionUbicacion();
+        txtEstado = findViewById(R.id.txtEstado);
+
+        switchDisponible = findViewById(R.id.switchDisponible);
+
+        txtCliente = findViewById(R.id.txtCliente);
+        txtOrigen = findViewById(R.id.txtOrigen);
+        txtDestino = findViewById(R.id.txtDestino);
+        txtSolicitud = findViewById(R.id.txtSolicitud);
+
+        btnActualizar = findViewById(R.id.btnActualizar);
+        btnAceptar = findViewById(R.id.btnAceptar);
+        btnRechazar = findViewById(R.id.btnRechazar);
+
+        btnIniciarViaje = findViewById(R.id.btnIniciarViaje);
+        btnFinalizarViaje = findViewById(R.id.btnFinalizarViaje);
+
+    }
+    private void configurarPermisos() {
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -112,13 +144,43 @@ public class ConductorActivity extends AppCompatActivity {
 
         }
 
-        txtEstado = findViewById(R.id.txtEstado);
-        switchDisponible = findViewById(R.id.switchDisponible);
-        boolean disponible =
-                getSharedPreferences("conductor", MODE_PRIVATE)
-                        .getBoolean("disponible", false);
+    }
+    private void configurarEstadoInicial() {
+
+        boolean disponible = getSharedPreferences(
+                "conductor",
+                MODE_PRIVATE
+        ).getBoolean("disponible", false);
 
         switchDisponible.setChecked(disponible);
+
+        if (disponible) {
+
+            txtEstado.setText("Estado: Disponible");
+
+            btnActualizar.setEnabled(true);
+            btnAceptar.setEnabled(true);
+            btnRechazar.setEnabled(true);
+            btnIniciarViaje.setEnabled(true);
+            btnFinalizarViaje.setEnabled(true);
+
+            iniciarActualizacionUbicacion();
+
+        } else {
+
+            txtEstado.setText("Estado: Desconectado");
+
+            btnActualizar.setEnabled(false);
+            btnAceptar.setEnabled(false);
+            btnRechazar.setEnabled(false);
+            btnIniciarViaje.setEnabled(false);
+            btnFinalizarViaje.setEnabled(false);
+
+            detenerActualizacionUbicacion();
+        }
+
+    }
+    private void configurarSwitch() {
 
         switchDisponible.setOnCheckedChangeListener((buttonView, isChecked) -> {
 
@@ -153,63 +215,12 @@ public class ConductorActivity extends AppCompatActivity {
 
             }
 
-            if (disponible) {
-                iniciarActualizacionUbicacion();
-            }
-
         });
 
-
-        txtCliente = findViewById(R.id.txtCliente);
-        txtOrigen = findViewById(R.id.txtOrigen);
-        txtDestino = findViewById(R.id.txtDestino);
-        txtSolicitud = findViewById(R.id.txtSolicitud);
+    }
 
 
-        btnActualizar = findViewById(R.id.btnActualizar);
-        btnAceptar = findViewById(R.id.btnAceptar);
-        btnRechazar = findViewById(R.id.btnRechazar);
-
-        btnIniciarViaje = findViewById(R.id.btnIniciarViaje);
-
-        btnFinalizarViaje = findViewById(R.id.btnFinalizarViaje);
-
-        if (disponible) {
-
-            txtEstado.setText("Estado: Disponible");
-
-            btnActualizar.setEnabled(true);
-            btnAceptar.setEnabled(true);
-            btnRechazar.setEnabled(true);
-            btnIniciarViaje.setEnabled(true);
-            btnFinalizarViaje.setEnabled(true);
-
-        } else {
-
-            txtEstado.setText("Estado: Desconectado");
-
-            btnActualizar.setEnabled(false);
-            btnAceptar.setEnabled(false);
-            btnRechazar.setEnabled(false);
-            btnIniciarViaje.setEnabled(false);
-            btnFinalizarViaje.setEnabled(false);
-        }
-
-
-
-
-        if (disponible) {
-
-            txtEstado.setText("Estado: Disponible");
-
-            btnActualizar.setEnabled(true);
-            btnAceptar.setEnabled(true);
-            btnRechazar.setEnabled(true);
-
-        } else {
-
-            txtEstado.setText("Estado: Desconectado");
-        }
+    private void configurarBottomNavigation() {
 
         BottomNavigationView bottomNavigation;
 
@@ -233,51 +244,25 @@ public class ConductorActivity extends AppCompatActivity {
             }
 
             return false;
-        });
-
-
-
-
-        switchDisponible.setOnCheckedChangeListener((buttonView, isChecked) -> {
-
-            if (isChecked) {
-
-                getSharedPreferences("conductor", MODE_PRIVATE)
-                        .edit()
-                        .putBoolean("disponible", true)
-                        .apply();
-                txtEstado.setText("Estado: Disponible");
-
-                btnActualizar.setEnabled(true);
-                btnAceptar.setEnabled(true);
-                btnRechazar.setEnabled(true);
-
-                btnIniciarViaje.setEnabled(true);
-                btnFinalizarViaje.setEnabled(true);
-
-            } else {
-                getSharedPreferences("conductor", MODE_PRIVATE)
-                        .edit()
-                        .putBoolean("disponible", false)
-                        .apply();
-
-                txtEstado.setText("Estado: Desconectado");
-
-                btnActualizar.setEnabled(false);
-                btnAceptar.setEnabled(false);
-                btnRechazar.setEnabled(false);
-
-                btnIniciarViaje.setEnabled(false);
-                btnFinalizarViaje.setEnabled(false);
-
-                txtSolicitud.setText("No hay solicitudes pendientes");
-                txtCliente.setText("Cliente: Sin solicitudes");
-                txtOrigen.setText("Origen:");
-                txtDestino.setText("Destino:");
-            }
 
         });
 
+    }
+    private void configurarEventos() {
+
+        configurarBotonActualizar();
+
+        configurarBotonAceptar();
+
+        configurarBotonIniciarViaje();
+
+        configurarBotonFinalizarViaje();
+
+        configurarBotonRechazar();
+
+
+    }
+    private void configurarBotonActualizar() {
         btnActualizar.setOnClickListener(v -> {
 
             ApiService apiService = RetrofitClient
@@ -336,8 +321,9 @@ public class ConductorActivity extends AppCompatActivity {
 
         });
 
+    }
 
-
+    private void configurarBotonAceptar() {
 
         btnAceptar.setOnClickListener(v -> {
 
@@ -346,7 +332,7 @@ public class ConductorActivity extends AppCompatActivity {
                     .create(ApiService.class);
 
 
-                    String conductorEmail =
+            String conductorEmail =
                     getSharedPreferences("sesion", MODE_PRIVATE)
                             .getString("email", "");
 
@@ -413,6 +399,10 @@ public class ConductorActivity extends AppCompatActivity {
 
         });
 
+    }
+
+
+    private void configurarBotonIniciarViaje() {
         btnIniciarViaje.setOnClickListener(v -> {
 
             if (viajeId == 0) {
@@ -466,6 +456,11 @@ public class ConductorActivity extends AppCompatActivity {
 
         });
 
+    }
+
+
+
+    private void configurarBotonFinalizarViaje() {
         btnFinalizarViaje.setOnClickListener(v -> {
 
             if (viajeId == 0) {
@@ -529,7 +524,10 @@ public class ConductorActivity extends AppCompatActivity {
 
         });
 
+    }
 
+
+    private void configurarBotonRechazar() {
 
         btnRechazar.setOnClickListener(v -> {
 
@@ -544,6 +542,13 @@ public class ConductorActivity extends AppCompatActivity {
         });
 
     }
+
+
+
+
+
+
+
     private void obtenerUbicacionConductor() {
 
         locationHelper.obtenerUbicacionActual(
