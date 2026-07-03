@@ -30,28 +30,30 @@ public class LocationHelper {
     public void obtenerUbicacionActual(
             @NonNull OnLocationResult listener) {
 
-        fusedLocationClient
-                .getLastLocation()
-                .addOnSuccessListener(location -> {
+        fusedLocationClient.getCurrentLocation(
+                com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+                null
+        ).addOnSuccessListener(location -> {
 
-                    if (location != null) {
+            if (location != null) {
 
-                        listener.onLocationReceived(location);
+                listener.onLocationReceived(location);
 
-                    } else {
+            } else {
 
-                        listener.onError(
-                                "No fue posible obtener la ubicación."
-                        );
-
-                    }
-
-                })
-                .addOnFailureListener(e ->
-
-                        listener.onError(e.getMessage())
-
+                listener.onError(
+                        "No fue posible obtener la ubicación actual."
                 );
+
+            }
+
+        }).addOnFailureListener(e ->
+
+                listener.onError(
+                        "Error de ubicación: " + e.getMessage()
+                )
+
+        );
 
     }
 

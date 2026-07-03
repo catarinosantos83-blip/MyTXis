@@ -134,7 +134,7 @@ public class ConductorActivity extends AppCompatActivity {
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
 
-            obtenerUbicacionConductor();
+
 
         } else {
 
@@ -629,11 +629,7 @@ public class ConductorActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                Toast.makeText(
-                        ConductorActivity.this,
-                        "Handler funcionando",
-                        Toast.LENGTH_SHORT
-                ).show();
+
 
                 obtenerUbicacionConductor();
 
