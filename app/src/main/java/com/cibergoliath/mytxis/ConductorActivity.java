@@ -54,6 +54,8 @@ public class ConductorActivity extends AppCompatActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private Runnable runnableUbicacion;
+    private Handler handlerViajes;
+    private Runnable runnableViajes;
 
     private final ActivityResultLauncher<String> locationPermissionLauncher =
             registerForActivityResult(
@@ -165,6 +167,7 @@ public class ConductorActivity extends AppCompatActivity {
             btnFinalizarViaje.setEnabled(true);
 
             iniciarActualizacionUbicacion();
+            iniciarBusquedaViajes();
 
         } else {
 
@@ -200,6 +203,7 @@ public class ConductorActivity extends AppCompatActivity {
                 btnFinalizarViaje.setEnabled(true);
 
                 iniciarActualizacionUbicacion();
+                iniciarBusquedaViajes();
 
             } else {
 
@@ -212,6 +216,7 @@ public class ConductorActivity extends AppCompatActivity {
                 btnFinalizarViaje.setEnabled(false);
 
                 detenerActualizacionUbicacion();
+                detenerBusquedaViajes();
 
             }
 
@@ -263,65 +268,104 @@ public class ConductorActivity extends AppCompatActivity {
 
     }
     private void configurarBotonActualizar() {
+
         btnActualizar.setOnClickListener(v -> {
 
-            ApiService apiService = RetrofitClient
-                    .getClient()
-                    .create(ApiService.class);
-
-            Call<ViajeResponse> call =
-                    apiService.obtenerViajePendiente();
-
-            call.enqueue(new Callback<ViajeResponse>() {
-
-                @Override
-                public void onResponse(Call<ViajeResponse> call,
-                                       Response<ViajeResponse> response) {
-
-                    if (response.isSuccessful()
-                            && response.body() != null) {
-
-                        ViajeResponse viaje = response.body();
-
-                        viajeId = viaje.getId();
-
-                        txtCliente.setText(
-                                "Cliente: " +
-                                        viaje.getUsuario_email());
-
-                        txtOrigen.setText(
-                                "Origen: " +
-                                        viaje.getPunto_partida());
-
-                        txtDestino.setText(
-                                "Destino: " +
-                                        viaje.getDestino());
-
-                    } else {
-
-                        Toast.makeText(
-                                ConductorActivity.this,
-                                "No hay viajes pendientes",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ViajeResponse> call,
-                                      Throwable t) {
-
-                    Toast.makeText(
-                            ConductorActivity.this,
-                            "Error: " + t.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                }
-            });
+            verificarViajesPendientes();
 
         });
 
     }
+
+    private void verificarViajesPendientes() {
+
+        ApiService apiService = RetrofitClient
+                .getClient()
+                .create(ApiService.class);
+
+        Call<ViajeResponse> call =
+                apiService.obtenerViajePendiente();
+
+        call.enqueue(new Callback<ViajeResponse>() {
+
+            @Override
+            public void onResponse(Call<ViajeResponse> call,
+                                   Response<ViajeResponse> response) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    ViajeResponse viaje = response.body();
+
+                    viajeId = viaje.getId();
+
+                    txtCliente.setText(
+                            "Cliente: " +
+                                    viaje.getUsuario_email());
+
+                    txtOrigen.setText(
+                            "Origen: " +
+                                    viaje.getPunto_partida());
+
+                    txtDestino.setText(
+                            "Destino: " +
+                                    viaje.getDestino());
+
+                } else {
+
+                    //no hay viajespendientes
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ViajeResponse> call,
+                                  Throwable t) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Error: " + t.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+
+            }
+
+        });
+
+    }
+
+    private void iniciarBusquedaViajes() {
+
+        handlerViajes = new Handler(Looper.getMainLooper());
+
+        runnableViajes = new Runnable() {
+
+            @Override
+            public void run() {
+
+                verificarViajesPendientes();
+
+                handlerViajes.postDelayed(this, 5000);
+
+            }
+
+        };
+
+        handlerViajes.post(runnableViajes);
+
+    }
+    private void detenerBusquedaViajes() {
+
+        if (handlerViajes != null && runnableViajes != null) {
+
+            handlerViajes.removeCallbacks(runnableViajes);
+
+        }
+
+    }
+
+
 
     private void configurarBotonAceptar() {
 
