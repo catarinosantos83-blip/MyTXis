@@ -623,7 +623,7 @@ public class ConductorActivity extends AppCompatActivity {
     }
     private void enviarUbicacionAlServidor(double latitud, double longitud) {
 
-        String email = getSharedPreferences("usuario", MODE_PRIVATE)
+        String email = getSharedPreferences("sesion", MODE_PRIVATE)
                 .getString("email", "");
 
         ApiService apiService =
