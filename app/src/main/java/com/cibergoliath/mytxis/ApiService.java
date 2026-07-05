@@ -8,6 +8,7 @@ import retrofit2.http.POST;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 import com.cibergoliath.mytxis.models.DirectionsResponse;
+import com.cibergoliath.mytxis.models.PerfilConductorResponse;
 
 public interface ApiService {
 
@@ -108,6 +109,11 @@ public interface ApiService {
 
             @Field("longitud") double longitud
 
+    );
+    @FormUrlEncoded
+    @POST("obtener_perfil_conductor.php")
+    Call<PerfilConductorResponse> obtenerPerfilConductor(
+            @Field("email") String email
     );
 
     @POST("cerrar_sesion.php")

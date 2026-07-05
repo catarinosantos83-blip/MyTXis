@@ -3,18 +3,19 @@ package com.cibergoliath.mytxis;
 import android.os.Bundle;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import android.content.Intent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import com.cibergoliath.mytxis.models.PerfilConductorResponse;
 
 public class PerfilConductorActivity extends AppCompatActivity {
 
@@ -59,9 +60,10 @@ public class PerfilConductorActivity extends AppCompatActivity {
         txtMarcaPerfil = findViewById(R.id.txtMarcaPerfil);
         txtModeloPerfil = findViewById(R.id.txtModeloPerfil);
         txtColorPerfil = findViewById(R.id.txtColorPerfil);
+        btnCerrarSesionConductor = findViewById(R.id.btnCerrarSesionConductor);
 
-        btnCerrarSesionConductor =
-                findViewById(R.id.btnCerrarSesionConductor);
+        cargarPerfilConductor();
+        /*
 
         SharedPreferences preferencias =
                 getSharedPreferences("conductor", MODE_PRIVATE);
@@ -83,6 +85,10 @@ public class PerfilConductorActivity extends AppCompatActivity {
         txtModeloPerfil.setText("Modelo: " + modelo);
         txtColorPerfil.setText("Color: " + color);
 
+         */
+
+
+
         btnCerrarSesionConductor.setOnClickListener(v -> {
 
             getSharedPreferences("sesion", MODE_PRIVATE)
@@ -102,4 +108,66 @@ public class PerfilConductorActivity extends AppCompatActivity {
 
 
     }
+    private void cargarPerfilConductor() {
+
+        String email = getSharedPreferences("sesion", MODE_PRIVATE)
+                .getString("email", "");
+
+        ApiService apiService =
+                RetrofitClient.getClient().create(ApiService.class);
+
+        Call<PerfilConductorResponse> call =
+                apiService.obtenerPerfilConductor(email);
+
+        call.enqueue(new Callback<PerfilConductorResponse>() {
+
+            @Override
+            public void onResponse(Call<PerfilConductorResponse> call,
+                                   Response<PerfilConductorResponse> response) {
+
+                if (response.isSuccessful() && response.body() != null) {
+
+                    PerfilConductorResponse perfil = response.body();
+
+                    txtPlacaPerfil.setText(
+                            "Placa: " + perfil.getPlaca());
+
+                    txtMarcaPerfil.setText(
+                            "Marca: " + perfil.getMarca());
+
+                    txtModeloPerfil.setText(
+                            "Modelo: " + perfil.getModelo());
+
+                    txtColorPerfil.setText(
+                            "Color: " + perfil.getColor());
+
+                } else {
+
+                    Toast.makeText(
+                            PerfilConductorActivity.this,
+                            "No se pudo cargar el perfil",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<PerfilConductorResponse> call,
+                                  Throwable t) {
+
+                Toast.makeText(
+                        PerfilConductorActivity.this,
+                        "Error: " + t.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+
+            }
+
+        });
+
+    }
+
+
 }
