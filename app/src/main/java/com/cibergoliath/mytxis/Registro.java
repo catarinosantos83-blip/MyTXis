@@ -55,8 +55,7 @@ public class Registro extends AppCompatActivity {
 
         btnRegistrar.setOnClickListener(v -> {
 
-
-
+            btnRegistrar.setEnabled(false);
 
             String nombre = txtNombre.getText().toString().trim();
             String email = txtEmail.getText().toString().trim();
@@ -69,6 +68,7 @@ public class Registro extends AppCompatActivity {
                 Toast.makeText(Registro.this,
                         "Completa todos los campos",
                         Toast.LENGTH_SHORT).show();
+                btnRegistrar.setEnabled(true);
                 return;
             }
 
@@ -88,11 +88,15 @@ public class Registro extends AppCompatActivity {
                 public void onResponse(Call<String> call,
                                        Response<String> response) {
                     if (response.body() != null) {
+
                         Toast.makeText(
                                 Registro.this,
                                 response.body(),
                                 Toast.LENGTH_LONG
                         ).show();
+
+                        btnRegistrar.setEnabled(true);
+
                     }
 
 
@@ -109,6 +113,8 @@ public class Registro extends AppCompatActivity {
                             "Error: " + t.getMessage(),
                             Toast.LENGTH_LONG
                     ).show();
+
+                    btnRegistrar.setEnabled(true);
                 }
             });
 
