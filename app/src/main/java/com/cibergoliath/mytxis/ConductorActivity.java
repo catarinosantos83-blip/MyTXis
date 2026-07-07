@@ -667,6 +667,7 @@ public class ConductorActivity extends AppCompatActivity {
     }
 
     private void iniciarActualizacionUbicacion() {
+        detenerActualizacionUbicacion();
 
         runnableUbicacion = new Runnable() {
 
