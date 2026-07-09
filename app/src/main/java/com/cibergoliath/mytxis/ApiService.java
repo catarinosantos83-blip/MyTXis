@@ -116,6 +116,12 @@ public interface ApiService {
             @Field("email") String email
     );
 
+    @FormUrlEncoded
+    @POST("obtener_viaje_aceptado.php")
+    Call<ViajeResponse> obtenerViajeAceptado(
+            @Field("conductor_email") String conductorEmail
+    );
+
     @POST("cerrar_sesion.php")
     Call<String> logout();
 }

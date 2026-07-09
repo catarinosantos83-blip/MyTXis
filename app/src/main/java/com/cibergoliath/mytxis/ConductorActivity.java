@@ -399,7 +399,11 @@ public class ConductorActivity extends AppCompatActivity {
 
                         if (resultado.equals("success")) {
 
+                            detenerBusquedaViajes();
+
                             txtSolicitud.setText("Viaje aceptado");
+
+                            cargarViajeAceptado();
 
                             Toast.makeText(
                                     ConductorActivity.this,
@@ -571,6 +575,9 @@ public class ConductorActivity extends AppCompatActivity {
     }
 
 
+
+
+
     private void configurarBotonRechazar() {
 
         btnRechazar.setOnClickListener(v -> {
@@ -695,6 +702,65 @@ public class ConductorActivity extends AppCompatActivity {
             handler.removeCallbacks(runnableUbicacion);
 
         }
+
+    }
+
+    private void cargarViajeAceptado() {
+
+        String conductorEmail = getSharedPreferences("sesion", MODE_PRIVATE)
+                .getString("email", "");
+
+        ApiService apiService = RetrofitClient
+                .getClient()
+                .create(ApiService.class);
+
+        Call<ViajeResponse> call =
+                apiService.obtenerViajeAceptado(conductorEmail);
+
+        call.enqueue(new Callback<ViajeResponse>() {
+
+            @Override
+            public void onResponse(Call<ViajeResponse> call,
+                                   Response<ViajeResponse> response) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    ViajeResponse viaje = response.body();
+
+                    viajeId = viaje.getId();
+
+                    txtSolicitud.setText("Viaje aceptado");
+
+                    txtCliente.setText(
+                            "Cliente: " +
+                                    viaje.getUsuario_email());
+
+                    txtOrigen.setText(
+                            "Origen: " +
+                                    viaje.getPunto_partida());
+
+                    txtDestino.setText(
+                            "Destino: " +
+                                    viaje.getDestino());
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ViajeResponse> call,
+                                  Throwable t) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Error: " + t.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show();
+
+            }
+
+        });
 
     }
 }
