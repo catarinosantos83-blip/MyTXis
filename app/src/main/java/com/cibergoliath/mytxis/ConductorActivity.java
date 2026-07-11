@@ -40,6 +40,7 @@ public class ConductorActivity extends AppCompatActivity {
     TextView txtCliente;
     TextView txtOrigen;
     TextView txtDestino;
+    TextView txtReferencia;
 
     Button btnActualizar;
     Button btnAceptar;
@@ -119,6 +120,9 @@ public class ConductorActivity extends AppCompatActivity {
         txtCliente = findViewById(R.id.txtCliente);
         txtOrigen = findViewById(R.id.txtOrigen);
         txtDestino = findViewById(R.id.txtDestino);
+
+        txtReferencia = findViewById(R.id.txtReferencia);
+
         txtSolicitud = findViewById(R.id.txtSolicitud);
 
         btnActualizar = findViewById(R.id.btnActualizar);
@@ -301,11 +305,15 @@ public class ConductorActivity extends AppCompatActivity {
 
                     txtCliente.setText(
                             "Cliente: " +
-                                    viaje.getUsuario_email());
+                                    viaje.getNombre());
 
                     txtOrigen.setText(
                             "Origen: " +
                                     viaje.getPunto_partida());
+
+                    txtReferencia.setText(
+                            "Referencia: " +
+                                    viaje.getReferencia());
 
                     txtDestino.setText(
                             "Destino: " +
@@ -549,6 +557,11 @@ public class ConductorActivity extends AppCompatActivity {
                         txtDestino.setText("Destino:");
 
                         viajeId = 0;
+                        if (switchDisponible.isChecked()) {
+
+                            iniciarBusquedaViajes();
+
+                        }
 
                         Toast.makeText(
                                 ConductorActivity.this,
@@ -734,11 +747,16 @@ public class ConductorActivity extends AppCompatActivity {
 
                     txtCliente.setText(
                             "Cliente: " +
-                                    viaje.getUsuario_email());
+                                    viaje.getNombre());
 
                     txtOrigen.setText(
                             "Origen: " +
                                     viaje.getPunto_partida());
+
+
+                    txtReferencia.setText(
+                            "Referencia: " +
+                                    viaje.getReferencia());
 
                     txtDestino.setText(
                             "Destino: " +

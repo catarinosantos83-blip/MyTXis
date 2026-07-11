@@ -6,6 +6,8 @@ public class ViajeResponse {
     private String usuario_email;
     private String punto_partida;
     private String destino;
+    private String referencia;
+    private String nombre;
 
     public int getId() {
         return id;
@@ -21,5 +23,12 @@ public class ViajeResponse {
 
     public String getDestino() {
         return destino;
+    }
+
+    public String getReferencia() {
+        return referencia;
+    }
+    public String getNombre() {
+        return nombre;
     }
 }
