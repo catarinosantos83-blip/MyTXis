@@ -32,6 +32,8 @@ import android.os.Looper;
 
 import com.cibergoliath.mytxis.location.LocationHelper;
 
+import android.util.Log;
+
 public class ConductorActivity extends AppCompatActivity {
 
     TextView txtEstado;
@@ -50,6 +52,8 @@ public class ConductorActivity extends AppCompatActivity {
     Button btnFinalizarViaje;
 
     TextView txtSolicitud;
+
+    private static final String TAG = "MYTXIS";
 
     private LocationHelper locationHelper;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -98,6 +102,9 @@ public class ConductorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        Log.d(TAG, "onCreate()");
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_conductor);
 
@@ -170,8 +177,6 @@ public class ConductorActivity extends AppCompatActivity {
             btnIniciarViaje.setEnabled(true);
             btnFinalizarViaje.setEnabled(true);
 
-            iniciarActualizacionUbicacion();
-            iniciarBusquedaViajes();
 
         } else {
 
@@ -257,6 +262,43 @@ public class ConductorActivity extends AppCompatActivity {
         });
 
     }
+    @Override
+    protected void onStop() {
+        Log.d(TAG, "onStop()");
+
+        super.onStop();
+
+        detenerActualizacionUbicacion();
+
+        detenerBusquedaViajes();
+
+    }
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume()");
+
+        super.onResume();
+
+        boolean disponible = getSharedPreferences(
+                "conductor",
+                MODE_PRIVATE
+        ).getBoolean("disponible", false);
+        Log.d(TAG, "Disponible = " + disponible);
+
+        if (disponible) {
+
+            iniciarActualizacionUbicacion();
+
+            iniciarBusquedaViajes();
+
+            cargarViajeAceptado();
+
+        }
+
+    }
+
+
+
     private void configurarEventos() {
 
         configurarBotonActualizar();
@@ -282,7 +324,9 @@ public class ConductorActivity extends AppCompatActivity {
     }
 
     private void verificarViajesPendientes() {
+        Log.d(TAG, "verificarViajesPendientes()");
 
+        
         ApiService apiService = RetrofitClient
                 .getClient()
                 .create(ApiService.class);
@@ -298,6 +342,8 @@ public class ConductorActivity extends AppCompatActivity {
 
                 if (response.isSuccessful()
                         && response.body() != null) {
+
+
 
                     ViajeResponse viaje = response.body();
 
@@ -345,12 +391,16 @@ public class ConductorActivity extends AppCompatActivity {
 
     private void iniciarBusquedaViajes() {
 
+        Log.d(TAG, "iniciarBusquedaViajes()");
+
         handlerViajes = new Handler(Looper.getMainLooper());
 
         runnableViajes = new Runnable() {
 
             @Override
             public void run() {
+
+                Log.d(TAG, "Runnable ejecutándose");
 
                 verificarViajesPendientes();
 
@@ -364,6 +414,8 @@ public class ConductorActivity extends AppCompatActivity {
 
     }
     private void detenerBusquedaViajes() {
+
+        Log.d(TAG, "detenerBusquedaViajes()");
 
         if (handlerViajes != null && runnableViajes != null) {
 
@@ -400,8 +452,15 @@ public class ConductorActivity extends AppCompatActivity {
                 public void onResponse(Call<String> call,
                                        Response<String> response) {
 
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Respuesta recibida",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
                     if (response.isSuccessful()
                             && response.body() != null) {
+
 
                         String resultado = response.body().trim();
 
@@ -587,10 +646,6 @@ public class ConductorActivity extends AppCompatActivity {
 
     }
 
-
-
-
-
     private void configurarBotonRechazar() {
 
         btnRechazar.setOnClickListener(v -> {
@@ -606,12 +661,6 @@ public class ConductorActivity extends AppCompatActivity {
         });
 
     }
-
-
-
-
-
-
 
     private void obtenerUbicacionConductor() {
 
@@ -719,6 +768,11 @@ public class ConductorActivity extends AppCompatActivity {
     }
 
     private void cargarViajeAceptado() {
+        Toast.makeText(
+                ConductorActivity.this,
+                "Entró a cargarViajeAceptado",
+                Toast.LENGTH_SHORT
+        ).show();
 
         String conductorEmail = getSharedPreferences("sesion", MODE_PRIVATE)
                 .getString("email", "");
@@ -736,8 +790,22 @@ public class ConductorActivity extends AppCompatActivity {
             public void onResponse(Call<ViajeResponse> call,
                                    Response<ViajeResponse> response) {
 
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Respuesta recibida",
+                        Toast.LENGTH_SHORT
+                ).show();
+
                 if (response.isSuccessful()
                         && response.body() != null) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Viaje encontrado",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+
 
                     ViajeResponse viaje = response.body();
 
@@ -761,6 +829,15 @@ public class ConductorActivity extends AppCompatActivity {
                     txtDestino.setText(
                             "Destino: " +
                                     viaje.getDestino());
+
+                }
+                else {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "No hay viaje aceptado",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
                 }
 

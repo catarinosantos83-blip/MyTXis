@@ -42,13 +42,10 @@ public class PerfilConductorActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.nav_inicio_conductor) {
 
-                startActivity(new Intent(
-                        PerfilConductorActivity.this,
-                        ConductorActivity.class));
+                finish();
 
                 return true;
-
-            } else if (item.getItemId() == R.id.nav_perfil_conductor) {
+            }else if (item.getItemId() == R.id.nav_perfil_conductor) {
 
                 return true;
             }
