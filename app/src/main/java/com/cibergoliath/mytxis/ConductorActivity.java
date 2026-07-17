@@ -347,23 +347,7 @@ public class ConductorActivity extends AppCompatActivity {
 
                     ViajeResponse viaje = response.body();
 
-                    viajeId = viaje.getId();
-
-                    txtCliente.setText(
-                            "Cliente: " +
-                                    viaje.getNombre());
-
-                    txtOrigen.setText(
-                            "Origen: " +
-                                    viaje.getPunto_partida());
-
-                    txtReferencia.setText(
-                            "Referencia: " +
-                                    viaje.getReferencia());
-
-                    txtDestino.setText(
-                            "Destino: " +
-                                    viaje.getDestino());
+                    mostrarViaje(viaje);
 
                 } else {
 
@@ -386,6 +370,36 @@ public class ConductorActivity extends AppCompatActivity {
             }
 
         });
+
+    }
+
+    private void mostrarViaje(ViajeResponse viaje) {
+
+        viajeId = viaje.getId();
+
+        txtCliente.setText("Cliente: " + viaje.getNombre());
+
+        txtOrigen.setText("Origen: " + viaje.getPunto_partida());
+
+        txtReferencia.setText("Referencia: " + viaje.getReferencia());
+
+        txtDestino.setText("Destino: " + viaje.getDestino());
+
+    }
+
+    private void limpiarPantallaViaje() {
+
+        txtSolicitud.setText("No hay solicitudes pendientes");
+
+        txtCliente.setText("Cliente: Sin solicitudes");
+
+        txtOrigen.setText("Origen:");
+
+        txtReferencia.setText("Referencia:");
+
+        txtDestino.setText("Destino:");
+
+        viajeId = 0;
 
     }
 
@@ -605,17 +619,8 @@ public class ConductorActivity extends AppCompatActivity {
                             && response.body() != null
                             && response.body().trim().equals("success")) {
 
-                        txtSolicitud.setText(
-                                "No hay solicitudes pendientes");
+                        limpiarPantallaViaje();
 
-                        txtCliente.setText(
-                                "Cliente: Sin solicitudes");
-
-                        txtOrigen.setText("Origen:");
-
-                        txtDestino.setText("Destino:");
-
-                        viajeId = 0;
                         if (switchDisponible.isChecked()) {
 
                             iniciarBusquedaViajes();
@@ -806,29 +811,18 @@ public class ConductorActivity extends AppCompatActivity {
                     ).show();
 
 
-
                     ViajeResponse viaje = response.body();
 
-                    viajeId = viaje.getId();
+                    Log.d(TAG, "===== VIAJE ACEPTADO =====");
+                    Log.d(TAG, "ID: " + viaje.getId());
+                    Log.d(TAG, "Nombre: " + viaje.getNombre());
+                    Log.d(TAG, "Origen: " + viaje.getPunto_partida());
+                    Log.d(TAG, "Referencia: " + viaje.getReferencia());
+                    Log.d(TAG, "Destino: " + viaje.getDestino());
 
                     txtSolicitud.setText("Viaje aceptado");
 
-                    txtCliente.setText(
-                            "Cliente: " +
-                                    viaje.getNombre());
-
-                    txtOrigen.setText(
-                            "Origen: " +
-                                    viaje.getPunto_partida());
-
-
-                    txtReferencia.setText(
-                            "Referencia: " +
-                                    viaje.getReferencia());
-
-                    txtDestino.setText(
-                            "Destino: " +
-                                    viaje.getDestino());
+                    mostrarViaje(viaje);
 
                 }
                 else {
