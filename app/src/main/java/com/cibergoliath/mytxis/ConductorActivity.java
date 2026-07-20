@@ -275,26 +275,40 @@ public class ConductorActivity extends AppCompatActivity {
     }
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume()");
 
         super.onResume();
+
+        Log.d(TAG, "onResume()");
 
         boolean disponible = getSharedPreferences(
                 "conductor",
                 MODE_PRIVATE
         ).getBoolean("disponible", false);
+
         Log.d(TAG, "Disponible = " + disponible);
 
         if (disponible) {
 
+            cargarViajeAceptado();          // Primero recuperar el viaje aceptado
+
             iniciarActualizacionUbicacion();
 
-            iniciarBusquedaViajes();
-
-            cargarViajeAceptado();
+            iniciarBusquedaViajes();        // Después empezar a buscar pendientes
 
         }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
 
+        Log.d(TAG, "===== ConductorActivity PAUSE =====");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.d(TAG, "===== ConductorActivity DESTROY =====");
     }
 
 
@@ -324,8 +338,12 @@ public class ConductorActivity extends AppCompatActivity {
     }
 
     private void verificarViajesPendientes() {
-        Log.d(TAG, "verificarViajesPendientes()");
+        Log.d(TAG, ">>> verificarViajesPendientes()");
 
+        if (viajeId > 0) {
+            Log.d(TAG, "Ya existe un viaje activo. No buscar pendientes.");
+            return;
+        }
         
         ApiService apiService = RetrofitClient
                 .getClient()
@@ -343,11 +361,14 @@ public class ConductorActivity extends AppCompatActivity {
                 if (response.isSuccessful()
                         && response.body() != null) {
 
-
-
                     ViajeResponse viaje = response.body();
 
-                    mostrarViaje(viaje);
+                    Log.d(TAG, "[PENDIENTE] Nombre = '" + viaje.getNombre() + "'");
+                    Log.d(TAG, "[PENDIENTE] ID = " + viaje.getId());
+
+                    if (viaje.getId() > 0) {
+                        mostrarViaje(viaje);
+                    }
 
                 } else {
 
@@ -424,22 +445,21 @@ public class ConductorActivity extends AppCompatActivity {
 
         };
 
-        handlerViajes.post(runnableViajes);
+        handlerViajes.postDelayed(runnableViajes, 3000);
 
     }
     private void detenerBusquedaViajes() {
 
-        Log.d(TAG, "detenerBusquedaViajes()");
+        Log.d(TAG, ">>> detenerBusquedaViajes()");
 
-        if (handlerViajes != null && runnableViajes != null) {
+        if (handlerViajes != null) {
 
-            handlerViajes.removeCallbacks(runnableViajes);
+            handlerViajes.removeCallbacksAndMessages(null);
 
+            Log.d(TAG, "Todos los callbacks eliminados");
         }
 
     }
-
-
 
     private void configurarBotonAceptar() {
 
@@ -466,11 +486,6 @@ public class ConductorActivity extends AppCompatActivity {
                 public void onResponse(Call<String> call,
                                        Response<String> response) {
 
-                    Toast.makeText(
-                            ConductorActivity.this,
-                            "Respuesta recibida",
-                            Toast.LENGTH_SHORT
-                    ).show();
 
                     if (response.isSuccessful()
                             && response.body() != null) {
@@ -587,8 +602,6 @@ public class ConductorActivity extends AppCompatActivity {
 
     }
 
-
-
     private void configurarBotonFinalizarViaje() {
         btnFinalizarViaje.setOnClickListener(v -> {
 
@@ -655,13 +668,8 @@ public class ConductorActivity extends AppCompatActivity {
 
         btnRechazar.setOnClickListener(v -> {
 
-            txtSolicitud.setText("Solicitud rechazada");
 
-            txtCliente.setText("Cliente: Sin solicitudes");
-
-            txtOrigen.setText("Origen:");
-
-            txtDestino.setText("Destino:");
+            limpiarPantallaViaje();
 
         });
 
@@ -773,11 +781,7 @@ public class ConductorActivity extends AppCompatActivity {
     }
 
     private void cargarViajeAceptado() {
-        Toast.makeText(
-                ConductorActivity.this,
-                "Entró a cargarViajeAceptado",
-                Toast.LENGTH_SHORT
-        ).show();
+
 
         String conductorEmail = getSharedPreferences("sesion", MODE_PRIVATE)
                 .getString("email", "");
@@ -795,30 +799,15 @@ public class ConductorActivity extends AppCompatActivity {
             public void onResponse(Call<ViajeResponse> call,
                                    Response<ViajeResponse> response) {
 
-                Toast.makeText(
-                        ConductorActivity.this,
-                        "Respuesta recibida",
-                        Toast.LENGTH_SHORT
-                ).show();
-
                 if (response.isSuccessful()
                         && response.body() != null) {
 
-                    Toast.makeText(
-                            ConductorActivity.this,
-                            "Viaje encontrado",
-                            Toast.LENGTH_SHORT
-                    ).show();
 
 
                     ViajeResponse viaje = response.body();
 
-                    Log.d(TAG, "===== VIAJE ACEPTADO =====");
-                    Log.d(TAG, "ID: " + viaje.getId());
-                    Log.d(TAG, "Nombre: " + viaje.getNombre());
-                    Log.d(TAG, "Origen: " + viaje.getPunto_partida());
-                    Log.d(TAG, "Referencia: " + viaje.getReferencia());
-                    Log.d(TAG, "Destino: " + viaje.getDestino());
+                    Log.d(TAG, "[ACEPTADO] Nombre = '" + viaje.getNombre() + "'");
+                    Log.d(TAG, "[ACEPTADO] ID = " + viaje.getId());
 
                     txtSolicitud.setText("Viaje aceptado");
 
@@ -826,12 +815,6 @@ public class ConductorActivity extends AppCompatActivity {
 
                 }
                 else {
-
-                    Toast.makeText(
-                            ConductorActivity.this,
-                            "No hay viaje aceptado",
-                            Toast.LENGTH_SHORT
-                    ).show();
 
                 }
 
