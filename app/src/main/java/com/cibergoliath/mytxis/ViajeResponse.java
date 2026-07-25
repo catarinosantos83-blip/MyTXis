@@ -8,6 +8,7 @@ public class ViajeResponse {
     private String destino;
     private String referencia;
     private String nombre;
+    private String estado;
 
     public int getId() {
         return id;
@@ -30,5 +31,8 @@ public class ViajeResponse {
     }
     public String getNombre() {
         return nombre;
+    }
+    public String getEstado() {
+        return estado;
     }
 }

@@ -808,8 +808,23 @@ public class ConductorActivity extends AppCompatActivity {
 
                     Log.d(TAG, "[ACEPTADO] Nombre = '" + viaje.getNombre() + "'");
                     Log.d(TAG, "[ACEPTADO] ID = " + viaje.getId());
+                    Log.d(TAG, "[ACEPTADO] Estado = '" + viaje.getEstado() + "'");
 
-                    txtSolicitud.setText("Viaje aceptado");
+                    String estado = viaje.getEstado();
+
+                    if ("aceptado".equalsIgnoreCase(estado)) {
+
+                        txtSolicitud.setText("Viaje aceptado");
+
+                    } else if ("en_camino".equalsIgnoreCase(estado)) {
+
+                        txtSolicitud.setText("Viaje en camino");
+
+                    } else {
+
+                        txtSolicitud.setText("Estado: " + estado);
+
+                    }
 
                     mostrarViaje(viaje);
 
