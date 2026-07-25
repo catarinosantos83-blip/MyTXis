@@ -408,6 +408,36 @@ public class ConductorActivity extends AppCompatActivity {
 
     }
 
+    private void actualizarBotonesSegunViaje(String estado) {
+
+        if ("aceptado".equalsIgnoreCase(estado)) {
+
+            btnAceptar.setEnabled(false);
+            btnRechazar.setEnabled(false);
+
+            btnIniciarViaje.setEnabled(true);
+            btnFinalizarViaje.setEnabled(false);
+
+        } else if ("en_camino".equalsIgnoreCase(estado)) {
+
+            btnAceptar.setEnabled(false);
+            btnRechazar.setEnabled(false);
+
+            btnIniciarViaje.setEnabled(false);
+            btnFinalizarViaje.setEnabled(true);
+
+        } else {
+
+            // Sin viaje activo
+            btnAceptar.setEnabled(true);
+            btnRechazar.setEnabled(true);
+
+            btnIniciarViaje.setEnabled(false);
+            btnFinalizarViaje.setEnabled(false);
+        }
+
+    }
+
     private void limpiarPantallaViaje() {
 
         txtSolicitud.setText("No hay solicitudes pendientes");
@@ -578,6 +608,8 @@ public class ConductorActivity extends AppCompatActivity {
 
                         txtSolicitud.setText("Viaje en camino");
 
+                        actualizarBotonesSegunViaje("en_camino");
+
                         Toast.makeText(
                                 ConductorActivity.this,
                                 "Viaje iniciado",
@@ -633,6 +665,8 @@ public class ConductorActivity extends AppCompatActivity {
                             && response.body().trim().equals("success")) {
 
                         limpiarPantallaViaje();
+
+                        actualizarBotonesSegunViaje("");
 
                         if (switchDisponible.isChecked()) {
 
@@ -827,6 +861,7 @@ public class ConductorActivity extends AppCompatActivity {
                     }
 
                     mostrarViaje(viaje);
+                    actualizarBotonesSegunViaje(viaje.getEstado());
 
                 }
                 else {
