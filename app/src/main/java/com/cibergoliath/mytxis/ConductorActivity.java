@@ -103,6 +103,26 @@ public class ConductorActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
+        String email = getSharedPreferences("sesion", MODE_PRIVATE)
+                .getString("email", "");
+
+        if (email.isEmpty()) {
+
+            Intent intent = new Intent(
+                    ConductorActivity.this,
+                    Login.class
+            );
+
+            intent.setFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+            );
+
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         Log.d(TAG, "onCreate()");
 
         EdgeToEdge.enable(this);

@@ -122,6 +122,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String emailSesion =
+                getSharedPreferences("sesion", MODE_PRIVATE)
+                        .getString("email", "");
+
+        if (emailSesion.isEmpty()) {
+
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    Login.class
+            );
+
+            intent.setFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+            );
+
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
