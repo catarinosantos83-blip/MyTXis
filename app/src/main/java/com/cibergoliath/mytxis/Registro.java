@@ -89,17 +89,47 @@ public class Registro extends AppCompatActivity {
                                        Response<String> response) {
                     if (response.body() != null) {
 
-                        Toast.makeText(
-                                Registro.this,
-                                response.body(),
-                                Toast.LENGTH_LONG
-                        ).show();
+                        String resultado = response.body().trim();
 
-                        btnRegistrar.setEnabled(true);
+                        if (resultado.equalsIgnoreCase("Registro insertado correctamente")) {
 
+                            getSharedPreferences("sesion", MODE_PRIVATE)
+                                    .edit()
+                                    .putBoolean("logueado", true)
+                                    .putString("tipo_usuario", "cliente")
+                                    .putString("email", email)
+                                    .apply();
+
+                            Toast.makeText(
+                                    Registro.this,
+                                    "¡Bienvenido a MyTXis!",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            Intent intent = new Intent(
+                                    Registro.this,
+                                    MainActivity.class
+                            );
+
+                            intent.setFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK |
+                                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            );
+
+                            startActivity(intent);
+                            finish();
+
+                        } else {
+
+                            Toast.makeText(
+                                    Registro.this,
+                                    resultado,
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            btnRegistrar.setEnabled(true);
+                        }
                     }
-
-
 
 
                 }

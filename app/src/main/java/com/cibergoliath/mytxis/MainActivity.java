@@ -18,6 +18,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -44,7 +46,6 @@ import java.util.List;
 import android.graphics.Color;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.cibergoliath.mytxis.models.Route;
 import com.cibergoliath.mytxis.models.Leg;
 
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView txtColor;
     TextView txtDistancia;
     TextView txtTiempo;
+    TextView txtEstadoViaje;
 
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
@@ -71,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private double destinoLat;
     private double destinoLng;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    private Runnable actualizarEstadoRunnable;
 
     private final ActivityResultLauncher<Intent> mapaLauncher =
             registerForActivityResult(
@@ -195,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtVehiculo = findViewById(R.id.txtVehiculo);
         txtPlaca = findViewById(R.id.txtPlaca);
         txtColor = findViewById(R.id.txtColor);
+        txtEstadoViaje = findViewById(R.id.txtEstadoViaje);
 
         txtDistancia = findViewById(R.id.txtDistancia);
         txtTiempo = findViewById(R.id.txtTiempo);
@@ -202,90 +209,37 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         bottomNavigation = findViewById(R.id.bottomNavigation);
 
 
-        String emailUsuario =
-                getSharedPreferences(
-                        "sesion",
-                        MODE_PRIVATE)
-                        .getString("email", "");
 
-        ApiService apiServiceConductor = RetrofitClient
-                .getClient()
-                .create(ApiService.class);
-
-        Call<ConductorInfoResponse> callConductor =
-                apiServiceConductor.obtenerConductorCliente(emailUsuario);
-
-
-
-
-
-
-        callConductor.enqueue(new Callback<ConductorInfoResponse>() {
-
-            @Override
-            public void onResponse(
-                    Call<ConductorInfoResponse> call,
-                    Response<ConductorInfoResponse> response) {
-
-                if (response.isSuccessful()
-                        && response.body() != null) {
-
-                    ConductorInfoResponse conductor =
-                            response.body();
-
-                    if (conductor.getNombre() == null
-                            || conductor.getNombre().isEmpty()) {
-
-                        txtConductor.setText("Conductor:");
-                        txtVehiculo.setText("Vehículo:");
-                        txtPlaca.setText("Placa:");
-                        txtColor.setText("Color:");
-
-                    } else {
-
-                        txtConductor.setText(
-                                "Conductor: " +
-                                        conductor.getNombre());
-
-                        txtVehiculo.setText(
-                                "Vehículo: " +
-                                        conductor.getMarca() +
-                                        " " +
-                                        conductor.getModelo());
-
-                        txtPlaca.setText(
-                                "Placa: " +
-                                        conductor.getPlaca());
-
-                        txtColor.setText(
-                                "Color: " +
-                                        conductor.getColor());
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(
-                    Call<ConductorInfoResponse> call,
-                    Throwable t) {
-
-            }
-        });
 
         btnSolicitarViaje.setOnClickListener(v -> {
 
             String referencia = edtReferencia.getText().toString().trim();
 
-            if (referencia.isEmpty()) {
+            String origen = txtOrigen.getText().toString().trim();
+            String destino = txtDestino.getText().toString().trim();
 
-                edtReferencia.setError("Capture una referencia");
-                edtReferencia.requestFocus();
+            if (origen.isEmpty()) {
+
+                Toast.makeText(
+                        MainActivity.this,
+                        "Seleccione un origen",
+                        Toast.LENGTH_SHORT
+                ).show();
 
                 return;
             }
 
-            String origen = txtOrigen.getText().toString().trim();
-            String destino = txtDestino.getText().toString().trim();
+            if (destino.isEmpty()) {
+
+                Toast.makeText(
+                        MainActivity.this,
+                        "Seleccione un destino",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
 
             String email = getSharedPreferences(
                     "sesion",
@@ -313,16 +267,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             && response.body() != null
                             && response.body().trim().equals("success")) {
 
-                        Intent intent = new Intent(
+                        Toast.makeText(
                                 MainActivity.this,
-                                ActividadesActivity.class
-                        );
-
-                        intent.putExtra("origen", origen);
-                        intent.putExtra("destino", destino);
-                        intent.putExtra("referencia", referencia);
-
-                        startActivity(intent);
+                                "Viaje solicitado correctamente.\nBuscando conductor...",
+                                Toast.LENGTH_LONG
+                        ).show();
 
                     } else {
 
@@ -384,7 +333,175 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
 
+        actualizarEstadoRunnable = new Runnable() {
+            @Override
+            public void run() {
+
+                consultarEstadoViaje();
+
+                handler.postDelayed(this, 5000);
+
+            }
+        };
+
+        handler.post(actualizarEstadoRunnable);
+
+
     }
+
+    private void consultarConductorAsignado() {
+
+
+        // Aquí va exactamente el código que cortaste
+
+
+        String emailUsuario =
+                getSharedPreferences(
+                        "sesion",
+                        MODE_PRIVATE)
+                        .getString("email", "");
+
+        ApiService apiServiceConductor = RetrofitClient
+                .getClient()
+                .create(ApiService.class);
+
+        Call<ConductorInfoResponse> callConductor =
+                apiServiceConductor.obtenerConductorCliente(emailUsuario);
+
+
+        callConductor.enqueue(new Callback<ConductorInfoResponse>() {
+
+            @Override
+            public void onResponse(
+                    Call<ConductorInfoResponse> call,
+                    Response<ConductorInfoResponse> response) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    ConductorInfoResponse conductor =
+                            response.body();
+
+                    if (conductor.getNombre() == null
+                            || conductor.getNombre().isEmpty()) {
+
+                        txtConductor.setText("Conductor:");
+                        txtVehiculo.setText("Vehículo:");
+                        txtPlaca.setText("Placa:");
+                        txtColor.setText("Color:");
+
+                    } else {
+
+                        txtConductor.setText(
+                                "Conductor: " +
+                                        conductor.getNombre());
+
+                        txtVehiculo.setText(
+                                "Vehículo: " +
+                                        conductor.getMarca() +
+                                        " " +
+                                        conductor.getModelo());
+
+                        txtPlaca.setText(
+                                "Placa: " +
+                                        conductor.getPlaca());
+
+                        txtColor.setText(
+                                "Color: " +
+                                        conductor.getColor());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    Call<ConductorInfoResponse> call,
+                    Throwable t) {
+
+            }
+        });
+    }
+
+    private void consultarEstadoViaje() {
+
+        String email = getSharedPreferences(
+                "sesion",
+                MODE_PRIVATE
+        ).getString("email", "");
+
+        ApiService apiService = RetrofitClient
+                .getClient()
+                .create(ApiService.class);
+
+        Call<UltimoViajeResponse> call =
+                apiService.obtenerUltimoViaje(email);
+
+        call.enqueue(new Callback<UltimoViajeResponse>() {
+
+            @Override
+            public void onResponse(
+                    Call<UltimoViajeResponse> call,
+                    Response<UltimoViajeResponse> response) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    UltimoViajeResponse viaje = response.body();
+
+
+
+                    String estado = viaje.getEstado();
+
+                    switch (estado) {
+
+                        case "pendiente":
+                            txtEstadoViaje.setText("🟡 Buscando conductor...");
+                            break;
+
+                        case "aceptado":
+                            txtEstadoViaje.setText("🟢 Conductor asignado");
+                            consultarConductorAsignado();
+                            break;
+
+                        case "en_camino":
+                            txtEstadoViaje.setText("🚖 En viaje");
+                            consultarConductorAsignado();
+                            break;
+
+                        case "finalizado":
+
+                            txtEstadoViaje.setText("✅ Viaje finalizado");
+
+                            txtConductor.setText("Conductor:");
+                            txtVehiculo.setText("Vehículo:");
+                            txtPlaca.setText("Placa:");
+                            txtColor.setText("Color:");
+
+                            break;
+
+                        default:
+                            txtEstadoViaje.setText("Sin viaje");
+                            break;
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(
+                    Call<UltimoViajeResponse> call,
+                    Throwable t) {
+
+            }
+
+        });
+
+    }
+
+
+
+
     private void solicitarRuta() {
 
         String origen = origenLat + "," + origenLng;
@@ -528,4 +645,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtOrigen.setText(""+latLng.latitude);
         txtDestino.setText(""+latLng.longitude);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        handler.removeCallbacks(actualizarEstadoRunnable);
+    }
+
 }

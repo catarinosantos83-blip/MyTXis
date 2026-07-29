@@ -78,7 +78,7 @@
         android:id="@+id/edtReferencia"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Referencia del destino"
+        android:hint="Referencia del origen"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginTop="10dp"
@@ -87,12 +87,29 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
+        android:id="@+id/txtEstadoViaje"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="10dp"
+        android:text="Estado: Sin viaje"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/edtReferencia"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+    <TextView
         android:id="@+id/txtConductor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Conductor:"
         android:layout_marginTop="10dp"
-        app:layout_constraintTop_toBottomOf="@id/edtReferencia"
+        app:layout_constraintTop_toBottomOf="@id/txtEstadoViaje"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16dp"/>
 

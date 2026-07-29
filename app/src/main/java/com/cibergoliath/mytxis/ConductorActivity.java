@@ -33,6 +33,7 @@ import android.os.Looper;
 import com.cibergoliath.mytxis.location.LocationHelper;
 
 import android.util.Log;
+import android.graphics.Color;
 
 public class ConductorActivity extends AppCompatActivity {
 
@@ -223,7 +224,8 @@ public class ConductorActivity extends AppCompatActivity {
 
             if (isChecked) {
 
-                txtEstado.setText("Estado: Disponible");
+                txtEstado.setText("🟢 Disponible");
+                txtEstado.setTextColor(Color.parseColor("#2E7D32"));
 
                 btnActualizar.setEnabled(true);
                 btnAceptar.setEnabled(true);
@@ -236,7 +238,8 @@ public class ConductorActivity extends AppCompatActivity {
 
             } else {
 
-                txtEstado.setText("Estado: Desconectado");
+                txtEstado.setText("🔴 Desconectado");
+                txtEstado.setTextColor(Color.parseColor("#D32F2F"));
 
                 btnActualizar.setEnabled(false);
                 btnAceptar.setEnabled(false);
