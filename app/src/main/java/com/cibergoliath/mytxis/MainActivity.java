@@ -463,8 +463,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             consultarConductorAsignado();
                             break;
 
+                        case "hacia_cliente":
+
+                            txtEstadoViaje.setText("🚖 Conductor va hacia ti");
+
+                            consultarConductorAsignado();
+
+                            break;
+
+
+
                         case "en_camino":
-                            txtEstadoViaje.setText("🚖 En viaje");
+                            txtEstadoViaje.setText("🚖 Viaje en curso");
                             consultarConductorAsignado();
                             break;
 

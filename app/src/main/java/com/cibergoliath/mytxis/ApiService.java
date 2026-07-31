@@ -76,6 +76,12 @@ public interface ApiService {
     );
 
     @FormUrlEncoded
+    @POST("ir_hacia_cliente.php")
+    Call<String> irHaciaCliente(
+            @Field("id") int id
+    );
+
+    @FormUrlEncoded
     @POST("actualizar_estado_finalizado.php")
     Call<String> finalizarViaje(
             @Field("id") int id

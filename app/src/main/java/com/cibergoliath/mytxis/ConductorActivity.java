@@ -34,6 +34,7 @@ import com.cibergoliath.mytxis.location.LocationHelper;
 
 import android.util.Log;
 import android.graphics.Color;
+import android.view.View;
 
 public class ConductorActivity extends AppCompatActivity {
 
@@ -211,6 +212,7 @@ public class ConductorActivity extends AppCompatActivity {
 
             detenerActualizacionUbicacion();
         }
+        actualizarBotonesSegunViaje("");
 
     }
     private void configurarSwitch() {
@@ -354,7 +356,56 @@ public class ConductorActivity extends AppCompatActivity {
 
         btnActualizar.setOnClickListener(v -> {
 
-            verificarViajesPendientes();
+            if (viajeId == 0) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Primero acepte un viaje",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
+
+            Call<String> call = apiService.irHaciaCliente(viajeId);
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(Call<String> call,
+                                       Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null
+                            && response.body().trim().equals("success")) {
+
+                        txtSolicitud.setText("Conductor en camino");
+
+                        actualizarBotonesSegunViaje("hacia_cliente");
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Ahora vas hacia el cliente",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call,
+                                      Throwable t) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
 
         });
 
@@ -419,46 +470,58 @@ public class ConductorActivity extends AppCompatActivity {
 
     private void mostrarViaje(ViajeResponse viaje) {
 
+        Log.d(TAG, "===== mostrarViaje =====");
+        Log.d(TAG, "Estado recibido = " + viaje.getEstado());
+
         viajeId = viaje.getId();
 
         txtCliente.setText("Cliente: " + viaje.getNombre());
-
         txtOrigen.setText("Origen: " + viaje.getPunto_partida());
-
         txtReferencia.setText("Referencia: " + viaje.getReferencia());
-
         txtDestino.setText("Destino: " + viaje.getDestino());
 
+        txtSolicitud.setText("Estado: " + viaje.getEstado());
+
+        actualizarBotonesSegunViaje(viaje.getEstado());
     }
 
     private void actualizarBotonesSegunViaje(String estado) {
+        Log.d(TAG, "actualizarBotonesSegunViaje -> " + estado);
 
-        if ("aceptado".equalsIgnoreCase(estado)) {
+        // Ocultamos todos
+        btnActualizar.setVisibility(View.GONE);
+        btnAceptar.setVisibility(View.GONE);
+        btnRechazar.setVisibility(View.GONE);
+        btnIniciarViaje.setVisibility(View.GONE);
+        btnFinalizarViaje.setVisibility(View.GONE);
 
-            btnAceptar.setEnabled(false);
-            btnRechazar.setEnabled(false);
+        switch (estado.toLowerCase()) {
 
-            btnIniciarViaje.setEnabled(true);
-            btnFinalizarViaje.setEnabled(false);
+            case "pendiente":
 
-        } else if ("en_camino".equalsIgnoreCase(estado)) {
+                btnAceptar.setVisibility(View.VISIBLE);
+                btnRechazar.setVisibility(View.VISIBLE);
+                break;
 
-            btnAceptar.setEnabled(false);
-            btnRechazar.setEnabled(false);
+            case "aceptado":
 
-            btnIniciarViaje.setEnabled(false);
-            btnFinalizarViaje.setEnabled(true);
+                btnActualizar.setVisibility(View.VISIBLE); // Después lo renombraremos a "Ir hacia el cliente"
+                break;
 
-        } else {
+            case "hacia_cliente":
 
-            // Sin viaje activo
-            btnAceptar.setEnabled(true);
-            btnRechazar.setEnabled(true);
+                btnIniciarViaje.setVisibility(View.VISIBLE);
+                break;
 
-            btnIniciarViaje.setEnabled(false);
-            btnFinalizarViaje.setEnabled(false);
+            case "en_camino":
+
+                btnFinalizarViaje.setVisibility(View.VISIBLE);
+                break;
+
+            default:
+                // No mostrar ningún botón
+                break;
         }
-
     }
 
     private void limpiarPantallaViaje() {
@@ -693,6 +756,7 @@ public class ConductorActivity extends AppCompatActivity {
 
                         if (switchDisponible.isChecked()) {
 
+                            detenerBusquedaViajes();
                             iniciarBusquedaViajes();
 
                         }
