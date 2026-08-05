@@ -267,6 +267,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             && response.body() != null
                             && response.body().trim().equals("success")) {
 
+                        bloquearPantallaViaje();
+
+                        iniciarConsultaEstadoViaje();
+
                         Toast.makeText(
                                 MainActivity.this,
                                 "Viaje solicitado correctamente.\nBuscando conductor...",
@@ -344,15 +348,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
 
-        handler.post(actualizarEstadoRunnable);
+        // handler.post(actualizarEstadoRunnable);
+
+
 
 
     }
 
     private void consultarConductorAsignado() {
-
-
-        // Aquí va exactamente el código que cortaste
 
 
         String emailUsuario =
@@ -482,10 +485,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             txtEstadoViaje.setText("✅ Viaje finalizado");
 
-                            txtConductor.setText("Conductor:");
-                            txtVehiculo.setText("Vehículo:");
-                            txtPlaca.setText("Placa:");
-                            txtColor.setText("Color:");
+                            detenerConsultaEstadoViaje();
+                            limpiarPantallaViaje();
+                            desbloquearPantallaViaje();
 
                             break;
 
@@ -508,9 +510,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
     }
-
-
-
 
     private void solicitarRuta() {
 
@@ -654,6 +653,90 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapLongClick(@NonNull LatLng latLng) {
         txtOrigen.setText(""+latLng.latitude);
         txtDestino.setText(""+latLng.longitude);
+    }
+
+    private void bloquearPantallaViaje() {
+
+        txtOrigen.setEnabled(false);
+
+        txtDestino.setEnabled(false);
+
+        edtReferencia.setEnabled(false);
+
+        btnSolicitarViaje.setEnabled(false);
+
+    }
+
+    private void desbloquearPantallaViaje() {
+
+        txtOrigen.setEnabled(true);
+
+        txtDestino.setEnabled(true);
+
+        edtReferencia.setEnabled(true);
+
+        btnSolicitarViaje.setEnabled(true);
+
+    }
+
+    // Con este metodo decidiremos cuando iniciar consulta
+
+    private void iniciarConsultaEstadoViaje() {
+
+        if (actualizarEstadoRunnable != null) {
+
+            handler.post(actualizarEstadoRunnable);
+
+        }
+
+    }
+
+    private void detenerConsultaEstadoViaje() {
+
+        if (actualizarEstadoRunnable != null) {
+            handler.removeCallbacks(actualizarEstadoRunnable);
+        }
+
+    }
+
+    //*este metodo limpia toda la pantalla de cliente cuando el conductor finaliza*//
+
+    private void limpiarPantallaViaje() {
+
+        txtOrigen.setText("Seleccionar origen");
+
+        txtDestino.setText("Seleccionar destino");
+
+        edtReferencia.setText("");
+
+        txtDistancia.setText("");
+
+        txtTiempo.setText("");
+
+        txtConductor.setText("Conductor:");
+
+        txtVehiculo.setText("Vehículo:");
+
+        txtPlaca.setText("Placa:");
+
+        txtColor.setText("Color:");
+
+        txtEstadoViaje.setText("");
+
+        origenLat = 0;
+        origenLng = 0;
+
+        destinoLat = 0;
+        destinoLng = 0;
+
+        if (rutaActual != null) {
+
+            rutaActual.remove();
+
+            rutaActual = null;
+
+        }
+
     }
 
     @Override
