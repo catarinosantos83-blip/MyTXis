@@ -48,6 +48,19 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.cibergoliath.mytxis.models.Route;
 import com.cibergoliath.mytxis.models.Leg;
+import android.util.Log;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.location.Address;
+import android.location.Geocoder;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
@@ -63,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     GoogleMap mMap;
     BottomNavigationView bottomNavigation;
+    private FusedLocationProviderClient fusedLocationClient;
 
     private Polyline rutaActual;
 
@@ -129,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.d("MAIN", "onCreate ejecutado");
+
         String emailSesion =
                 getSharedPreferences("sesion", MODE_PRIVATE)
                         .getString("email", "");
@@ -153,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         txtOrigen = findViewById(R.id.txtOrigen);
         txtDestino = findViewById(R.id.txtDestino);
@@ -166,18 +183,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         txtOrigen.setOnClickListener(v -> {
 
-            tipoSeleccion = "ORIGEN";
+            String[] opciones = {
+                    "📍 Usar mi ubicación actual",
+                    "📝 Escribir dirección",
+                    "🗺️ Seleccionar en el mapa"
+            };
 
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    MapaActivity.class
-            );
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Seleccionar origen")
+                    .setItems(opciones, (dialog, which) -> {
 
-            intent.putExtra("tipo","ORIGEN");
+                        switch (which) {
 
-            mapaLauncher.launch(intent);
+                            case 0:
+
+                                obtenerUbicacionActual();
+
+                                break;
+
+                            case 1:
+                                // Escribir dirección
+                                break;
+
+                            case 2:
+
+                                tipoSeleccion = "ORIGEN";
+
+                                Intent intent = new Intent(
+                                        MainActivity.this,
+                                        MapaActivity.class
+                                );
+
+                                intent.putExtra("tipo", "ORIGEN");
+
+                                mapaLauncher.launch(intent);
+
+                                break;
+                        }
+
+                    })
+                    .show();
 
         });
+
 
         txtDestino.setOnClickListener(v -> {
 
@@ -347,11 +395,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         };
-
         // handler.post(actualizarEstadoRunnable);
-
-
-
 
     }
 
@@ -425,6 +469,70 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void obtenerUbicacionActual() {
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    100);
+
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+
+                    if (location != null) {
+
+                        origenLat = location.getLatitude();
+                        origenLng = location.getLongitude();
+
+                        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+                        try {
+
+                            List<Address> direcciones =
+                                    geocoder.getFromLocation(
+                                            origenLat,
+                                            origenLng,
+                                            1
+                                    );
+
+                            if (direcciones != null && !direcciones.isEmpty()) {
+
+                                Address direccion = direcciones.get(0);
+
+                                txtOrigen.setText(
+                                        direccion.getAddressLine(0)
+                                );
+
+                            }
+
+                        } catch (IOException e) {
+
+                            e.printStackTrace();
+
+                        }
+
+                    } else {
+
+                        Toast.makeText(
+                                this,
+                                "No fue posible obtener la ubicación",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    }
+
+                });
+
+    }
+
     private void consultarEstadoViaje() {
 
         String email = getSharedPreferences(
@@ -450,7 +558,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         && response.body() != null) {
 
                     UltimoViajeResponse viaje = response.body();
+                    txtOrigen.setText(viaje.getPunto_partida());
 
+                    txtDestino.setText(viaje.getDestino());
+
+                    edtReferencia.setText(viaje.getReferencia());
 
 
                     String estado = viaje.getEstado();

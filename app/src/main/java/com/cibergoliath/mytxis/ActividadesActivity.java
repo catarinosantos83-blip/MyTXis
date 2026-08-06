@@ -112,12 +112,7 @@ public class ActividadesActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.nav_home) {
 
-                Intent intent = new Intent(
-                        ActividadesActivity.this,
-                        MainActivity.class
-                );
-
-                startActivity(intent);
+                finish();
                 return true;
 
             } else if (item.getItemId() == R.id.nav_actividades) {

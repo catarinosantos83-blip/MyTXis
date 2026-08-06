@@ -92,9 +92,7 @@ public class UsuarioActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.nav_home) {
 
-                startActivity(new Intent(
-                        UsuarioActivity.this,
-                        MainActivity.class));
+                finish();
 
                 return true;
 
