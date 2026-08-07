@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
     EditText edtReferencia;
@@ -186,7 +187,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             String[] opciones = {
                     "📍 Usar mi ubicación actual",
                     "📝 Escribir dirección",
-                    "🗺️ Seleccionar en el mapa"
+                    "🗺️ Seleccionar en el mapa",
+                    "🗑️ Limpiar origen"
             };
 
             new AlertDialog.Builder(MainActivity.this)
@@ -202,7 +204,71 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 break;
 
                             case 1:
-                                // Escribir dirección
+
+                                final EditText edtDireccion = new EditText(MainActivity.this);
+
+                                edtDireccion.setHint("Ejemplo: Calle #, CP, Municipio, Estado");
+
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Escribir dirección")
+                                        .setView(edtDireccion)
+
+                                        .setPositiveButton("Buscar", (dialogInterface, whichButton) -> {
+
+                                            String direccion =
+                                                    edtDireccion.getText().toString().trim();
+
+                                            Geocoder geocoder = new Geocoder(
+                                                    MainActivity.this,
+                                                    Locale.getDefault()
+                                            );
+
+                                            try {
+
+                                                List<Address> lista =
+                                                        geocoder.getFromLocationName(
+                                                                direccion,
+                                                                1
+                                                        );
+
+                                                if (lista != null && !lista.isEmpty()) {
+
+                                                    Address address = lista.get(0);
+
+                                                    origenLat = address.getLatitude();
+                                                    origenLng = address.getLongitude();
+
+                                                    txtOrigen.setText(address.getAddressLine(0));
+
+                                                    mMap.animateCamera(
+                                                            CameraUpdateFactory.newLatLngZoom(
+                                                                    new LatLng(origenLat, origenLng),
+                                                                    17
+                                                            )
+                                                    );
+
+                                                } else {
+
+                                                    Toast.makeText(
+                                                            MainActivity.this,
+                                                            "Dirección no encontrada",
+                                                            Toast.LENGTH_SHORT
+                                                    ).show();
+
+                                                }
+
+                                            } catch (IOException e) {
+
+                                                e.printStackTrace();
+
+                                            }
+
+                                        })
+
+                                        .setNegativeButton("Cancelar", null)
+
+                                        .show();
+
                                 break;
 
                             case 2:
@@ -217,6 +283,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 intent.putExtra("tipo", "ORIGEN");
 
                                 mapaLauncher.launch(intent);
+
+                                break;
+                            case 3:
+
+                                limpiarOrigen();
 
                                 break;
                         }
@@ -467,6 +538,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
+    }
+
+    private void limpiarOrigen() {
+
+        txtOrigen.setText("");
+
+        origenLat = 0;
+        origenLng = 0;
+
+        txtDistancia.setText("");
+
+        txtTiempo.setText("");
+
+        if (rutaActual != null) {
+
+            rutaActual.remove();
+
+            rutaActual = null;
+
+        }
+
     }
 
     private void obtenerUbicacionActual() {
