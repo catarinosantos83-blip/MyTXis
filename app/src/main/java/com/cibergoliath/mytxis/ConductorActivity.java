@@ -96,6 +96,7 @@ public class ConductorActivity extends AppCompatActivity {
 
     private int viajeId = 0;
 
+    private boolean viajeAceptado = false;
 
 
     //inicia el segundo oncreate refactorizado//
@@ -414,8 +415,8 @@ public class ConductorActivity extends AppCompatActivity {
     private void verificarViajesPendientes() {
         Log.d(TAG, ">>> verificarViajesPendientes()");
 
-        if (viajeId > 0) {
-            Log.d(TAG, "Ya existe un viaje activo. No buscar pendientes.");
+        if (viajeAceptado) {
+            Log.d(TAG, "Ya existe un viaje aceptado. No buscar pendientes.");
             return;
         }
         
@@ -439,14 +440,21 @@ public class ConductorActivity extends AppCompatActivity {
 
                     Log.d(TAG, "[PENDIENTE] Nombre = '" + viaje.getNombre() + "'");
                     Log.d(TAG, "[PENDIENTE] ID = " + viaje.getId());
+                    Log.d(TAG, "[PENDIENTE] Estado = '" + viaje.getEstado() + "'");
 
                     if (viaje.getId() > 0) {
+
                         mostrarViaje(viaje);
+
+                    } else {
+
+                        limpiarSolicitudPendiente();
+
                     }
 
                 } else {
 
-                    //no hay viajespendientes
+                    limpiarSolicitudPendiente();
 
                 }
 
@@ -483,6 +491,20 @@ public class ConductorActivity extends AppCompatActivity {
         txtSolicitud.setText("Estado: " + viaje.getEstado());
 
         actualizarBotonesSegunViaje(viaje.getEstado());
+    }
+
+    private void limpiarSolicitudPendiente() {
+
+        viajeId = 0;
+
+        txtCliente.setText("Cliente:");
+        txtOrigen.setText("Origen:");
+        txtReferencia.setText("Referencia:");
+        txtDestino.setText("Destino:");
+        txtSolicitud.setText("");
+
+        actualizarBotonesSegunViaje("");
+
     }
 
     private void actualizarBotonesSegunViaje(String estado) {
@@ -610,6 +632,8 @@ public class ConductorActivity extends AppCompatActivity {
                         String resultado = response.body().trim();
 
                         if (resultado.equals("success")) {
+
+                            viajeAceptado = true;
 
                             detenerBusquedaViajes();
 

@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Locale;
 
 
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     EditText txtOrigen, txtDestino;
     EditText edtReferencia;
@@ -129,6 +130,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 txtDestino.setText(direccion);
 
                             }
+
+                            actualizarEstadoBotonSolicitar();
+
                             if (!txtOrigen.getText().toString().isEmpty()
                                     && !txtDestino.getText().toString().isEmpty()) {
 
@@ -239,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                     origenLng = address.getLongitude();
 
                                                     txtOrigen.setText(address.getAddressLine(0));
+                                                    actualizarEstadoBotonSolicitar();
 
                                                     mMap.animateCamera(
                                                             CameraUpdateFactory.newLatLngZoom(
@@ -300,21 +305,140 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         txtDestino.setOnClickListener(v -> {
 
-            tipoSeleccion = "DESTINO";
+            String[] opciones = {
+                    "📝 Escribir dirección o lugar",
+                    "🗺️ Seleccionar en el mapa",
+                    "🗑️ Limpiar destino"
+            };
 
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    MapaActivity.class
-            );
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Seleccionar destino")
+                    .setItems(opciones, (dialogInterface, which) -> {
 
-            intent.putExtra("tipo", "DESTINO");
+                        switch (which) {
 
-            mapaLauncher.launch(intent);
+                            case 0:
+
+                                final EditText edtDestino =
+                                        new EditText(MainActivity.this);
+
+                                edtDestino.setHint(
+                                        "Ejemplo: Terminal de Autobuses de Temascalcingo"
+                                );
+
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Escribir destino")
+                                        .setView(edtDestino)
+
+                                        .setPositiveButton(
+                                                "Buscar",
+                                                (d, whichButton) -> {
+
+                                                    String destino =
+                                                            edtDestino
+                                                                    .getText()
+                                                                    .toString()
+                                                                    .trim();
+
+                                                    Geocoder geocoder = new Geocoder(
+                                                            MainActivity.this,
+                                                            Locale.getDefault()
+                                                    );
+
+                                                    try {
+
+                                                        List<Address> lista =
+                                                                geocoder.getFromLocationName(
+                                                                        destino,
+                                                                        1
+                                                                );
+
+                                                        if (lista != null && !lista.isEmpty()) {
+
+                                                            Address address = lista.get(0);
+
+                                                            destinoLat = address.getLatitude();
+                                                            destinoLng = address.getLongitude();
+
+                                                            txtDestino.setText(
+                                                                    address.getAddressLine(0)
+                                                            );
+
+                                                            actualizarEstadoBotonSolicitar();
+
+                                                            mMap.animateCamera(
+                                                                    CameraUpdateFactory.newLatLngZoom(
+                                                                            new LatLng(
+                                                                                    destinoLat,
+                                                                                    destinoLng
+                                                                            ),
+                                                                            17
+                                                                    )
+                                                            );
+                                                            solicitarRuta();
+
+                                                        } else {
+
+                                                            Toast.makeText(
+                                                                    MainActivity.this,
+                                                                    "Destino no encontrado",
+                                                                    Toast.LENGTH_SHORT
+                                                            ).show();
+
+                                                        }
+
+                                                    } catch (IOException e) {
+
+                                                        e.printStackTrace();
+
+                                                        Toast.makeText(
+                                                                MainActivity.this,
+                                                                "Error al buscar el destino",
+                                                                Toast.LENGTH_SHORT
+                                                        ).show();
+                                                    }
+
+                                                })
+
+                                        .setNegativeButton(
+                                                "Cancelar",
+                                                null
+                                        )
+
+                                        .show();
+
+                                break;
+
+                            case 1:
+
+                                tipoSeleccion = "DESTINO";
+
+                                Intent intent = new Intent(
+                                        MainActivity.this,
+                                        MapaActivity.class
+                                );
+
+                                intent.putExtra("tipo", "DESTINO");
+
+                                mapaLauncher.launch(intent);
+
+                                break;
+
+                            case 2:
+
+                                limpiarDestino();
+
+                                break;
+                        }
+
+                    })
+                    .show();
 
         });
 
         edtReferencia = findViewById(R.id.edtReferencia);
         btnSolicitarViaje = findViewById(R.id.btnSolicitarViaje);
+        actualizarEstadoBotonSolicitar();
 
         txtConductor = findViewById(R.id.txtConductor);
         txtVehiculo = findViewById(R.id.txtVehiculo);
@@ -540,6 +664,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void limpiarDestino() {
+
+        txtDestino.setText("Seleccionar destino");
+
+        destinoLat = 0;
+        destinoLng = 0;
+
+        txtDistancia.setText("");
+        txtTiempo.setText("");
+
+        if (rutaActual != null) {
+
+            rutaActual.remove();
+
+            rutaActual = null;
+
+        }
+
+    }
+
     private void limpiarOrigen() {
 
         txtOrigen.setText("");
@@ -583,6 +727,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                         origenLat = location.getLatitude();
                         origenLng = location.getLongitude();
+
+                        actualizarEstadoBotonSolicitar();
 
                         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
@@ -713,6 +859,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         });
 
+    }
+
+    private void actualizarEstadoBotonSolicitar() {
+
+        boolean origenValido =
+                origenLat != 0 && origenLng != 0;
+
+        boolean destinoValido =
+                destinoLat != 0 && destinoLng != 0;
+
+        btnSolicitarViaje.setEnabled(
+                origenValido && destinoValido
+        );
     }
 
     private void solicitarRuta() {
@@ -879,7 +1038,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         edtReferencia.setEnabled(true);
 
-        btnSolicitarViaje.setEnabled(true);
+        actualizarEstadoBotonSolicitar();
 
     }
 
