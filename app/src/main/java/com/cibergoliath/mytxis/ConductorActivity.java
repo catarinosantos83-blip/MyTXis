@@ -35,8 +35,19 @@ import com.cibergoliath.mytxis.location.LocationHelper;
 import android.util.Log;
 import android.graphics.Color;
 import android.view.View;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import androidx.annotation.NonNull;
+import com.google.android.gms.maps.model.LatLng;
+import android.widget.LinearLayout;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Marker;
 
-public class ConductorActivity extends AppCompatActivity {
+public class ConductorActivity extends AppCompatActivity
+        implements OnMapReadyCallback {
 
     TextView txtEstado;
     SwitchMaterial switchDisponible;
@@ -56,6 +67,9 @@ public class ConductorActivity extends AppCompatActivity {
     TextView txtSolicitud;
 
     private static final String TAG = "MYTXIS";
+    private GoogleMap mMap;
+    private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
+    private Marker marcadorConductor;
 
     private LocationHelper locationHelper;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -129,7 +143,30 @@ public class ConductorActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate()");
 
         EdgeToEdge.enable(this);
+
+
         setContentView(R.layout.activity_conductor);
+        //codigo para que se pueda deslizar bottomSheet
+
+        LinearLayout bottomSheet =
+                findViewById(R.id.bottomSheetConductor);
+
+        bottomSheetBehavior =
+                BottomSheetBehavior.from(bottomSheet);
+
+        bottomSheetBehavior.setPeekHeight(120);
+        bottomSheetBehavior.setHideable(false);
+        bottomSheetBehavior.setState(
+                BottomSheetBehavior.STATE_COLLAPSED
+        );
+
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.mapaConductor);
+
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
         inicializarComponentes();
         configurarPermisos();
@@ -139,6 +176,22 @@ public class ConductorActivity extends AppCompatActivity {
         configurarBottomNavigation();
         configurarEventos();
     }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+
+        mMap = googleMap;
+
+        LatLng mexico = new LatLng(19.9492195, -99.9978082);
+
+        mMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                        mexico,
+                        10
+                )
+        );
+    }
+
     private void inicializarComponentes() {
 
         locationHelper = new LocationHelper(this);
@@ -825,14 +878,45 @@ public class ConductorActivity extends AppCompatActivity {
         locationHelper.obtenerUbicacionActual(
                 new LocationHelper.OnLocationResult() {
 
+                    // muestra ubicación del conductor
                     @Override
                     public void onLocationReceived(Location location) {
 
+                        double latitud = location.getLatitude();
+                        double longitud = location.getLongitude();
+
                         enviarUbicacionAlServidor(
-                                location.getLatitude(),
-                                location.getLongitude()
+                                latitud,
+                                longitud
                         );
 
+                        if (mMap != null) {
+
+                            LatLng ubicacionConductor =
+                                    new LatLng(latitud, longitud);
+
+                            if (marcadorConductor == null) {
+
+                                marcadorConductor = mMap.addMarker(
+                                        new MarkerOptions()
+                                                .position(ubicacionConductor)
+                                                .title("Mi ubicación")
+                                );
+
+                                mMap.animateCamera(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                                ubicacionConductor,
+                                                16
+                                        )
+                                );
+
+                            } else {
+
+                                marcadorConductor.setPosition(
+                                        ubicacionConductor
+                                );
+                            }
+                        }
                     }
 
                     @Override
@@ -846,8 +930,10 @@ public class ConductorActivity extends AppCompatActivity {
 
                     }
                 });
-
     }
+
+
+
     private void enviarUbicacionAlServidor(double latitud, double longitud) {
 
         String email = getSharedPreferences("sesion", MODE_PRIVATE)
@@ -900,8 +986,6 @@ public class ConductorActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-
-
 
                 obtenerUbicacionConductor();
 
