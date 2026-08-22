@@ -7,15 +7,23 @@ import android.location.Location;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
 public class LocationHelper {
 
     private final FusedLocationProviderClient fusedLocationClient;
 
+    private LocationCallback locationCallback;
+
     public LocationHelper(Context context) {
+
         fusedLocationClient =
                 LocationServices.getFusedLocationProviderClient(context);
+
     }
 
     public interface OnLocationResult {
@@ -27,34 +35,55 @@ public class LocationHelper {
     }
 
     @SuppressLint("MissingPermission")
-    public void obtenerUbicacionActual(
+    public void iniciarActualizacionesUbicacion(
             @NonNull OnLocationResult listener) {
 
-        fusedLocationClient.getCurrentLocation(
-                com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
-                null
-        ).addOnSuccessListener(location -> {
+        LocationRequest locationRequest =
+                new LocationRequest.Builder(
+                        Priority.PRIORITY_HIGH_ACCURACY,
+                        3000
+                )
+                        .setMinUpdateIntervalMillis(2000)
+                        .setMaxUpdateDelayMillis(3000)
+                        .build();
 
-            if (location != null) {
+        locationCallback = new LocationCallback() {
 
-                listener.onLocationReceived(location);
+            @Override
+            public void onLocationResult(
+                    @NonNull LocationResult locationResult) {
 
-            } else {
+                for (Location location :
+                        locationResult.getLocations()) {
 
-                listener.onError(
-                        "No fue posible obtener la ubicación actual."
-                );
+                    if (location != null) {
+
+                        listener.onLocationReceived(location);
+
+                    }
+
+                }
 
             }
 
-        }).addOnFailureListener(e ->
+        };
 
-                listener.onError(
-                        "Error de ubicación: " + e.getMessage()
-                )
-
+        fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                null
         );
-
     }
 
+    public void detenerActualizacionesUbicacion() {
+
+        if (locationCallback != null) {
+
+            fusedLocationClient.removeLocationUpdates(
+                    locationCallback
+            );
+
+            locationCallback = null;
+        }
+    }
 }

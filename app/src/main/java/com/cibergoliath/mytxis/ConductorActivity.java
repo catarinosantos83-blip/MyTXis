@@ -91,7 +91,7 @@ public class ConductorActivity extends AppCompatActivity
                                     Toast.LENGTH_SHORT
                             ).show();
 
-                            obtenerUbicacionConductor();
+                            iniciarActualizacionUbicacion();
 
 
 
@@ -873,65 +873,6 @@ public class ConductorActivity extends AppCompatActivity
 
     }
 
-    private void obtenerUbicacionConductor() {
-
-        locationHelper.obtenerUbicacionActual(
-                new LocationHelper.OnLocationResult() {
-
-                    // muestra ubicación del conductor
-                    @Override
-                    public void onLocationReceived(Location location) {
-
-                        double latitud = location.getLatitude();
-                        double longitud = location.getLongitude();
-
-                        enviarUbicacionAlServidor(
-                                latitud,
-                                longitud
-                        );
-
-                        if (mMap != null) {
-
-                            LatLng ubicacionConductor =
-                                    new LatLng(latitud, longitud);
-
-                            if (marcadorConductor == null) {
-
-                                marcadorConductor = mMap.addMarker(
-                                        new MarkerOptions()
-                                                .position(ubicacionConductor)
-                                                .title("Mi ubicación")
-                                );
-
-                                mMap.animateCamera(
-                                        CameraUpdateFactory.newLatLngZoom(
-                                                ubicacionConductor,
-                                                16
-                                        )
-                                );
-
-                            } else {
-
-                                marcadorConductor.setPosition(
-                                        ubicacionConductor
-                                );
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onError(String mensaje) {
-
-                        Toast.makeText(
-                                ConductorActivity.this,
-                                mensaje,
-                                Toast.LENGTH_LONG
-                        ).show();
-
-                    }
-                });
-    }
-
 
 
     private void enviarUbicacionAlServidor(double latitud, double longitud) {
@@ -980,32 +921,78 @@ public class ConductorActivity extends AppCompatActivity
     }
 
     private void iniciarActualizacionUbicacion() {
-        detenerActualizacionUbicacion();
 
-        runnableUbicacion = new Runnable() {
+        locationHelper.iniciarActualizacionesUbicacion(
+                new LocationHelper.OnLocationResult() {
 
-            @Override
-            public void run() {
+                    @Override
+                    public void onLocationReceived(Location location) {
 
-                obtenerUbicacionConductor();
+                        double latitud = location.getLatitude();
+                        double longitud = location.getLongitude();
 
-                handler.postDelayed(this, 5000);
+                        float precision = location.getAccuracy();
 
-            }
+                        Log.d(
+                                TAG,
+                                "GPS -> Lat: " + latitud
+                                        + " Lon: " + longitud
+                                        + " Precisión: "
+                                        + precision
+                                        + " metros"
+                        );
 
-        };
+                        enviarUbicacionAlServidor(
+                                latitud,
+                                longitud
+                        );
 
-        handler.post(runnableUbicacion);
+                        if (mMap != null) {
 
+                            LatLng ubicacionConductor =
+                                    new LatLng(latitud, longitud);
+
+                            if (marcadorConductor == null) {
+
+                                marcadorConductor = mMap.addMarker(
+                                        new MarkerOptions()
+                                                .position(ubicacionConductor)
+                                                .title("Mi ubicación")
+                                );
+
+                                mMap.animateCamera(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                                ubicacionConductor,
+                                                16
+                                        )
+                                );
+
+                            } else {
+
+                                marcadorConductor.setPosition(
+                                        ubicacionConductor
+                                );
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(String mensaje) {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                mensaje,
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    }
+                }
+        );
     }
 
     private void detenerActualizacionUbicacion() {
 
-        if (runnableUbicacion != null) {
-
-            handler.removeCallbacks(runnableUbicacion);
-
-        }
+        locationHelper.detenerActualizacionesUbicacion();
 
     }
 
