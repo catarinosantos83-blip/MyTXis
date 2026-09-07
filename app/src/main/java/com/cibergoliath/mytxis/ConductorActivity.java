@@ -29,6 +29,10 @@ import androidx.core.content.ContextCompat;
 import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
+import java.util.ArrayList;
+import java.util.List;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.cibergoliath.mytxis.location.LocationHelper;
 
@@ -65,6 +69,9 @@ public class ConductorActivity extends AppCompatActivity
     Button btnFinalizarViaje;
 
     TextView txtSolicitud;
+    private RecyclerView rvSolicitudes;
+    private List<ViajeResponse> listaSolicitudes;
+    private SolicitudAdapter solicitudAdapter;
 
     private static final String TAG = "MYTXIS";
     private GoogleMap mMap;
@@ -92,8 +99,6 @@ public class ConductorActivity extends AppCompatActivity
                             ).show();
 
                             iniciarActualizacionUbicacion();
-
-
 
                         } else {
 
@@ -154,9 +159,9 @@ public class ConductorActivity extends AppCompatActivity
         bottomSheetBehavior =
                 BottomSheetBehavior.from(bottomSheet);
 
-        bottomSheetBehavior.setPeekHeight(120);
+        bottomSheetBehavior.setPeekHeight(150);
         bottomSheetBehavior.setHideable(false);
-        bottomSheetBehavior.setState(
+                bottomSheetBehavior.setState(
                 BottomSheetBehavior.STATE_COLLAPSED
         );
 
@@ -207,6 +212,21 @@ public class ConductorActivity extends AppCompatActivity
         txtReferencia = findViewById(R.id.txtReferencia);
 
         txtSolicitud = findViewById(R.id.txtSolicitud);
+        rvSolicitudes = findViewById(R.id.rvSolicitudes);
+        rvSolicitudes.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+        listaSolicitudes = new ArrayList<>();
+
+        solicitudAdapter = new SolicitudAdapter(
+                listaSolicitudes,
+                viaje -> {
+                    mostrarViaje(viaje);
+
+                }
+        );
+
+        rvSolicitudes.setAdapter(solicitudAdapter);
 
         btnActualizar = findViewById(R.id.btnActualizar);
         btnAceptar = findViewById(R.id.btnAceptar);
@@ -466,67 +486,121 @@ public class ConductorActivity extends AppCompatActivity
     }
 
     private void verificarViajesPendientes() {
+
         Log.d(TAG, ">>> verificarViajesPendientes()");
 
         if (viajeAceptado) {
-            Log.d(TAG, "Ya existe un viaje aceptado. No buscar pendientes.");
+
+            Log.d(
+                    TAG,
+                    "Ya existe un viaje aceptado. No buscar pendientes."
+            );
+
             return;
         }
-        
-        ApiService apiService = RetrofitClient
-                .getClient()
-                .create(ApiService.class);
 
-        Call<ViajeResponse> call =
-                apiService.obtenerViajePendiente();
+        ApiService apiService =
+                RetrofitClient
+                        .getClient()
+                        .create(ApiService.class);
 
-        call.enqueue(new Callback<ViajeResponse>() {
+        String conductorEmail =
+                getSharedPreferences("sesion", MODE_PRIVATE)
+                        .getString("email", "");
+
+        Call<List<ViajeResponse>> call =
+                apiService.obtenerViajePendiente(
+                        conductorEmail
+                );
+
+        call.enqueue(new Callback<List<ViajeResponse>>() {
 
             @Override
-            public void onResponse(Call<ViajeResponse> call,
-                                   Response<ViajeResponse> response) {
+            public void onResponse(
+                    Call<List<ViajeResponse>> call,
+                    Response<List<ViajeResponse>> response) {
 
                 if (response.isSuccessful()
                         && response.body() != null) {
 
-                    ViajeResponse viaje = response.body();
+                    List<ViajeResponse> viajes =
+                            response.body();
 
-                    Log.d(TAG, "[PENDIENTE] Nombre = '" + viaje.getNombre() + "'");
-                    Log.d(TAG, "[PENDIENTE] ID = " + viaje.getId());
-                    Log.d(TAG, "[PENDIENTE] Estado = '" + viaje.getEstado() + "'");
+                    Log.d(
+                            TAG,
+                            "[PENDIENTES] Total = "
+                                    + viajes.size()
+                    );
 
-                    if (viaje.getId() > 0) {
+                    if (!viajes.isEmpty()) {
 
-                        mostrarViaje(viaje);
+                        Log.d(
+                                TAG,
+                                "[PENDIENTES] Actualizando lista..."
+                        );
+
+                        listaSolicitudes.clear();
+
+                        listaSolicitudes.addAll(viajes);
+
+                        solicitudAdapter.notifyDataSetChanged();
+
+                        // Mantener la solicitud seleccionada
+                        ViajeResponse viajeSeleccionado = null;
+
+                        for (ViajeResponse viaje : viajes) {
+
+                            if (viaje.getId() == viajeId) {
+
+                                viajeSeleccionado = viaje;
+                                break;
+                            }
+                        }
+
+// Si la solicitud seleccionada todavía existe,
+// mantenerla en el detalle.
+                        if (viajeSeleccionado != null) {
+
+                            mostrarViaje(viajeSeleccionado);
+
+                        } else {
+
+                            // Si no hay una solicitud seleccionada,
+                            // mostrar la primera.
+                            if (viajeId == 0) {
+
+                                mostrarViaje(viajes.get(0));
+
+                            }
+                        }
 
                     } else {
 
-                        limpiarSolicitudPendiente();
+                        listaSolicitudes.clear();
 
+                        solicitudAdapter.notifyDataSetChanged();
+
+                        limpiarSolicitudPendiente();
                     }
 
                 } else {
 
                     limpiarSolicitudPendiente();
-
                 }
-
             }
 
             @Override
-            public void onFailure(Call<ViajeResponse> call,
-                                  Throwable t) {
+            public void onFailure(
+                    Call<List<ViajeResponse>> call,
+                    Throwable t) {
 
                 Toast.makeText(
                         ConductorActivity.this,
                         "Error: " + t.getMessage(),
                         Toast.LENGTH_LONG
                 ).show();
-
             }
-
         });
-
     }
 
     private void mostrarViaje(ViajeResponse viaje) {
@@ -689,6 +763,14 @@ public class ConductorActivity extends AppCompatActivity
                             viajeAceptado = true;
 
                             detenerBusquedaViajes();
+
+                            /// El conductor ya está ocupado con este viaje
+                            // Limpiar todas las solicitudes pendientes de su pantalla
+                            listaSolicitudes.clear();
+
+                            solicitudAdapter.notifyDataSetChanged();
+
+                            solicitudAdapter.notifyDataSetChanged();
 
                             txtSolicitud.setText("Viaje aceptado");
 
@@ -866,11 +948,117 @@ public class ConductorActivity extends AppCompatActivity
 
         btnRechazar.setOnClickListener(v -> {
 
+            ApiService apiService =
+                    RetrofitClient
+                            .getClient()
+                            .create(ApiService.class);
 
-            limpiarPantallaViaje();
+            String conductorEmail =
+                    getSharedPreferences("sesion", MODE_PRIVATE)
+                            .getString("email", "");
 
+            Call<String> call =
+                    apiService.rechazarViaje(
+                            viajeId,
+                            conductorEmail
+                    );
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(
+                        Call<String> call,
+                        Response<String> response) {
+
+                    if (response.isSuccessful()
+                            && response.body() != null) {
+
+                        String resultado =
+                                response.body().trim();
+
+                        if (resultado.equals("success")) {
+
+                            // Eliminar la solicitud rechazada
+                            for (int i = 0;
+                                 i < listaSolicitudes.size();
+                                 i++) {
+
+                                if (listaSolicitudes
+                                        .get(i)
+                                        .getId() == viajeId) {
+
+                                    listaSolicitudes.remove(i);
+                                    break;
+                                }
+                            }
+
+                            solicitudAdapter
+                                    .notifyDataSetChanged();
+
+                            limpiarPantallaViaje();
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "Viaje rechazado",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                        } else if (resultado.equals("ya_rechazado")) {
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "Este viaje ya fue rechazado",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                        } else if (resultado.equals("no_autorizado")) {
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "Conductor no autorizado",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                        } else if (resultado.equals("viaje_no_disponible")) {
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "El viaje ya no está disponible",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                        } else {
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "Error al rechazar viaje",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+
+                    } else {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "Error del servidor",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(
+                        Call<String> call,
+                        Throwable t) {
+
+                    Toast.makeText(
+                            ConductorActivity.this,
+                            "Error: " + t.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
         });
-
     }
 
 

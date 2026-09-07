@@ -68,6 +68,24 @@
                 android:layout_height="5dp"
                 android:layout_gravity="center"
                 android:background="#BDBDBD" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Solicitudes pendientes"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSolicitudes"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:visibility="visible"
+                android:clipToPadding="false"
+                android:paddingBottom="8dp" />
+
             <TextView
                 android:id="@+id/txtSolicitud"
                 android:layout_width="match_parent"
@@ -155,10 +173,6 @@
         </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-
-
-
 
 
 

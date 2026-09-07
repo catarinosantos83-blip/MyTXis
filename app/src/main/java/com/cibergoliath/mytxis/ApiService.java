@@ -9,6 +9,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 import com.cibergoliath.mytxis.models.DirectionsResponse;
 import com.cibergoliath.mytxis.models.PerfilConductorResponse;
+import java.util.List;
 
 public interface ApiService {
 
@@ -44,7 +45,9 @@ public interface ApiService {
     );
 
     @GET("obtener_viaje_pendiente.php")
-    Call<ViajeResponse> obtenerViajePendiente();
+    Call<List<ViajeResponse>> obtenerViajePendiente(
+            @Query("conductor_email") String conductorEmail
+    );
 
     @FormUrlEncoded
     @POST("aceptar_viaje.php")
@@ -125,6 +128,13 @@ public interface ApiService {
     @FormUrlEncoded
     @POST("obtener_viaje_aceptado.php")
     Call<ViajeResponse> obtenerViajeAceptado(
+            @Field("conductor_email") String conductorEmail
+    );
+
+    @FormUrlEncoded
+    @POST("rechazar_viaje.php")
+    Call<String> rechazarViaje(
+            @Field("viaje_id") int viajeId,
             @Field("conductor_email") String conductorEmail
     );
 
