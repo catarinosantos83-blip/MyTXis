@@ -676,16 +676,12 @@ public class ConductorActivity extends AppCompatActivity
     private void limpiarPantallaViaje() {
 
         txtSolicitud.setText("No hay solicitudes pendientes");
-
         txtCliente.setText("Cliente: Sin solicitudes");
-
         txtOrigen.setText("Origen:");
-
         txtReferencia.setText("Referencia:");
-
         txtDestino.setText("Destino:");
-
         viajeId = 0;
+        viajeAceptado = false;
 
     }
 
