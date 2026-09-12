@@ -64,12 +64,17 @@ public class ConductorActivity extends AppCompatActivity
     Button btnActualizar;
     Button btnAceptar;
     Button btnRechazar;
+    Button btnVerSolicitudes;
+    Button btnVolverAlViaje;
 
     Button btnIniciarViaje;
     Button btnFinalizarViaje;
 
+
     TextView txtSolicitud;
     private RecyclerView rvSolicitudes;
+    private LinearLayout panelSolicitudes;
+    private LinearLayout panelDetalle;
     private List<ViajeResponse> listaSolicitudes;
     private SolicitudAdapter solicitudAdapter;
 
@@ -116,6 +121,7 @@ public class ConductorActivity extends AppCompatActivity
     private int viajeId = 0;
 
     private boolean viajeAceptado = false;
+    private boolean mostrandoSolicitudes = false;
 
 
     //inicia el segundo oncreate refactorizado//
@@ -213,6 +219,8 @@ public class ConductorActivity extends AppCompatActivity
 
         txtSolicitud = findViewById(R.id.txtSolicitud);
         rvSolicitudes = findViewById(R.id.rvSolicitudes);
+        panelSolicitudes = findViewById(R.id.panelSolicitudes);
+        panelDetalle = findViewById(R.id.panelDetalle);
         rvSolicitudes.setLayoutManager(
                 new LinearLayoutManager(this)
         );
@@ -231,6 +239,8 @@ public class ConductorActivity extends AppCompatActivity
         btnActualizar = findViewById(R.id.btnActualizar);
         btnAceptar = findViewById(R.id.btnAceptar);
         btnRechazar = findViewById(R.id.btnRechazar);
+        btnVerSolicitudes = findViewById(R.id.btnVerSolicitudes);
+        btnVolverAlViaje = findViewById(R.id.btnVolverAlViaje);
 
         btnIniciarViaje = findViewById(R.id.btnIniciarViaje);
         btnFinalizarViaje = findViewById(R.id.btnFinalizarViaje);
@@ -242,8 +252,6 @@ public class ConductorActivity extends AppCompatActivity
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-
-
 
         } else {
 
@@ -339,7 +347,11 @@ public class ConductorActivity extends AppCompatActivity
 
         bottomNavigation = findViewById(R.id.bottomNavigationConductor);
 
-        bottomNavigation.setSelectedItemId(R.id.nav_inicio_conductor);
+        // Esta actividad corresponde a INICIO
+        bottomNavigation.setSelectedItemId(
+                R.id.nav_inicio_conductor
+        );
+        Log.d(TAG, "BOTTOM NAV: Inicio seleccionado");
 
         bottomNavigation.setOnItemSelectedListener(item -> {
 
@@ -351,16 +363,16 @@ public class ConductorActivity extends AppCompatActivity
 
                 startActivity(new Intent(
                         ConductorActivity.this,
-                        PerfilConductorActivity.class));
+                        PerfilConductorActivity.class
+                ));
 
-                return true;
+                return false;
             }
 
             return false;
-
         });
-
     }
+
     @Override
     protected void onStop() {
         Log.d(TAG, "onStop()");
@@ -423,9 +435,13 @@ public class ConductorActivity extends AppCompatActivity
         configurarBotonFinalizarViaje();
 
         configurarBotonRechazar();
+        configurarBotonVerSolicitudes();
+        configurarBotonVolverAlViaje();
 
 
     }
+
+
     private void configurarBotonActualizar() {
 
         btnActualizar.setOnClickListener(v -> {
@@ -489,7 +505,7 @@ public class ConductorActivity extends AppCompatActivity
 
         Log.d(TAG, ">>> verificarViajesPendientes()");
 
-        if (viajeAceptado) {
+        if (viajeAceptado && !mostrandoSolicitudes) {
 
             Log.d(
                     TAG,
@@ -557,20 +573,21 @@ public class ConductorActivity extends AppCompatActivity
                             }
                         }
 
-// Si la solicitud seleccionada todavía existe,
-// mantenerla en el detalle.
+                        // Si la solicitud seleccionada todavía existe,
+                        // mantenerla en el detalle solamente si
+                        // no estamos mostrando la lista.
                         if (viajeSeleccionado != null) {
 
-                            mostrarViaje(viajeSeleccionado);
+                            if (panelSolicitudes.getVisibility() != View.VISIBLE) {
+                                mostrarViaje(viajeSeleccionado);
+                            }
 
                         } else {
 
                             // Si no hay una solicitud seleccionada,
                             // mostrar la primera.
                             if (viajeId == 0) {
-
                                 mostrarViaje(viajes.get(0));
-
                             }
                         }
 
@@ -610,6 +627,9 @@ public class ConductorActivity extends AppCompatActivity
 
         viajeId = viaje.getId();
 
+        panelSolicitudes.setVisibility(View.GONE);
+        panelDetalle.setVisibility(View.VISIBLE);
+
         txtCliente.setText("Cliente: " + viaje.getNombre());
         txtOrigen.setText("Origen: " + viaje.getPunto_partida());
         txtReferencia.setText("Referencia: " + viaje.getReferencia());
@@ -648,8 +668,21 @@ public class ConductorActivity extends AppCompatActivity
 
             case "pendiente":
 
-                btnAceptar.setVisibility(View.VISIBLE);
-                btnRechazar.setVisibility(View.VISIBLE);
+                if (viajeAceptado) {
+
+                    // El conductor ya tiene un viaje activo.
+                    // Puede consultar la solicitud,
+                    // pero no puede aceptarla ni rechazarla.
+
+                    btnAceptar.setVisibility(View.GONE);
+                    btnRechazar.setVisibility(View.GONE);
+
+                } else {
+
+                    btnAceptar.setVisibility(View.VISIBLE);
+                    btnRechazar.setVisibility(View.VISIBLE);
+                }
+
                 break;
 
             case "aceptado":
@@ -1056,8 +1089,31 @@ public class ConductorActivity extends AppCompatActivity
             });
         });
     }
+    private void configurarBotonVerSolicitudes() {
 
+        btnVerSolicitudes.setOnClickListener(v -> {
 
+            mostrandoSolicitudes = true;
+
+            panelDetalle.setVisibility(View.GONE);
+            panelSolicitudes.setVisibility(View.VISIBLE);
+
+            verificarViajesPendientes();
+        });
+    }
+
+    private void configurarBotonVolverAlViaje() {
+
+        btnVolverAlViaje.setOnClickListener(v -> {
+
+            mostrandoSolicitudes = false;
+
+            panelSolicitudes.setVisibility(View.GONE);
+            panelDetalle.setVisibility(View.VISIBLE);
+
+            cargarViajeAceptado();
+        });
+    }
 
     private void enviarUbicacionAlServidor(double latitud, double longitud) {
 
@@ -1182,13 +1238,14 @@ public class ConductorActivity extends AppCompatActivity
 
     private void cargarViajeAceptado() {
 
+        String conductorEmail =
+                getSharedPreferences("sesion", MODE_PRIVATE)
+                        .getString("email", "");
 
-        String conductorEmail = getSharedPreferences("sesion", MODE_PRIVATE)
-                .getString("email", "");
-
-        ApiService apiService = RetrofitClient
-                .getClient()
-                .create(ApiService.class);
+        ApiService apiService =
+                RetrofitClient
+                        .getClient()
+                        .create(ApiService.class);
 
         Call<ViajeResponse> call =
                 apiService.obtenerViajeAceptado(conductorEmail);
@@ -1196,59 +1253,79 @@ public class ConductorActivity extends AppCompatActivity
         call.enqueue(new Callback<ViajeResponse>() {
 
             @Override
-            public void onResponse(Call<ViajeResponse> call,
-                                   Response<ViajeResponse> response) {
+            public void onResponse(
+                    Call<ViajeResponse> call,
+                    Response<ViajeResponse> response) {
 
                 if (response.isSuccessful()
                         && response.body() != null) {
 
-
-
                     ViajeResponse viaje = response.body();
 
-                    Log.d(TAG, "[ACEPTADO] Nombre = '" + viaje.getNombre() + "'");
-                    Log.d(TAG, "[ACEPTADO] ID = " + viaje.getId());
-                    Log.d(TAG, "[ACEPTADO] Estado = '" + viaje.getEstado() + "'");
+                    Log.d(
+                            TAG,
+                            "[ACEPTADO] Nombre = '"
+                                    + viaje.getNombre()
+                    );
+
+                    Log.d(
+                            TAG,
+                            "[ACEPTADO] ID = "
+                                    + viaje.getId()
+                    );
+
+                    Log.d(
+                            TAG,
+                            "[ACEPTADO] Estado = '"
+                                    + viaje.getEstado()
+                                    + "'"
+                    );
 
                     String estado = viaje.getEstado();
 
                     if ("aceptado".equalsIgnoreCase(estado)) {
 
-                        txtSolicitud.setText("Viaje aceptado");
+                        viajeAceptado = true;
+
+                        txtSolicitud.setText(
+                                "Viaje aceptado"
+                        );
 
                     } else if ("en_camino".equalsIgnoreCase(estado)) {
 
-                        txtSolicitud.setText("Viaje en camino");
+                        viajeAceptado = true;
+
+                        txtSolicitud.setText(
+                                "Viaje en camino"
+                        );
 
                     } else {
 
-                        txtSolicitud.setText("Estado: " + estado);
-
+                        txtSolicitud.setText(
+                                "Estado: " + estado
+                        );
                     }
 
                     mostrarViaje(viaje);
-                    actualizarBotonesSegunViaje(viaje.getEstado());
+
+                    actualizarBotonesSegunViaje(
+                            viaje.getEstado()
+                    );
 
                 }
-                else {
-
-                }
-
             }
 
             @Override
-            public void onFailure(Call<ViajeResponse> call,
-                                  Throwable t) {
+            public void onFailure(
+                    Call<ViajeResponse> call,
+                    Throwable t) {
 
                 Toast.makeText(
                         ConductorActivity.this,
                         "Error: " + t.getMessage(),
                         Toast.LENGTH_LONG
                 ).show();
-
             }
-
         });
-
     }
 }

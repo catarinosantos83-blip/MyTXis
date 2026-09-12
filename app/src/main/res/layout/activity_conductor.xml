@@ -60,13 +60,17 @@
                 android:layout_gravity="center"
                 android:background="#BDBDBD"/>
 
-            <androidx.core.widget.NestedScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fillViewport="true"
-                android:overScrollMode="ifContentScrolls">
+                android:orientation="vertical">
+
+                <!-- =============================== -->
+                <!-- PANEL DE SOLICITUDES             -->
+                <!-- =============================== -->
 
                 <LinearLayout
+                    android:id="@+id/panelSolicitudes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -81,13 +85,35 @@
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="10dp"/>
 
+                    <Button
+                        android:id="@+id/btnVolverAlViaje"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="← Volver al viaje"
+                        android:layout_marginBottom="10dp"/>
+
+
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvSolicitudes"
                         android:layout_width="match_parent"
-                        android:layout_height="180dp"
-                        android:visibility="visible"
+                        android:layout_height="220dp"
                         android:clipToPadding="false"
                         android:paddingBottom="8dp"/>
+
+                </LinearLayout>
+
+
+                <!-- =============================== -->
+                <!-- PANEL DE DETALLE                 -->
+                <!-- =============================== -->
+
+                <LinearLayout
+                    android:id="@+id/panelDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/txtSolicitud"
@@ -130,11 +156,20 @@
                         android:layout_marginTop="10dp"/>
 
                     <Button
+                        android:id="@+id/btnVerSolicitudes"
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:text="Ver solicitudes"
+                        android:layout_marginTop="20dp"/>
+
+
+                    <Button
                         android:id="@+id/btnActualizar"
                         android:layout_width="250dp"
                         android:layout_height="wrap_content"
                         android:text="Ir hacia el cliente"
                         android:layout_marginTop="30dp"/>
+
 
                     <Button
                         android:id="@+id/btnAceptar"
@@ -166,7 +201,7 @@
 
                 </LinearLayout>
 
-            </androidx.core.widget.NestedScrollView>
+            </LinearLayout>
 
         </LinearLayout>
 
