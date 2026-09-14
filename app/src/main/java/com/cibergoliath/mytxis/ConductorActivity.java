@@ -273,7 +273,8 @@ public class ConductorActivity extends AppCompatActivity
 
         if (disponible) {
 
-            txtEstado.setText("Estado: Disponible");
+            txtEstado.setText("🟢 Disponible");
+            txtEstado.setTextColor(Color.parseColor("#2E7D32"));
 
             btnActualizar.setEnabled(true);
             btnAceptar.setEnabled(true);
@@ -284,7 +285,8 @@ public class ConductorActivity extends AppCompatActivity
 
         } else {
 
-            txtEstado.setText("Estado: Desconectado");
+            txtEstado.setText("🔴 Desconectado");
+            txtEstado.setTextColor(Color.parseColor("#D32F2F"));
 
             btnActualizar.setEnabled(false);
             btnAceptar.setEnabled(false);
@@ -940,6 +942,12 @@ public class ConductorActivity extends AppCompatActivity
 
                         limpiarPantallaViaje();
 
+                        // El conductor vuelve a estar disponible
+                        txtEstado.setText("🟢 Disponible");
+                        txtEstado.setTextColor(
+                                Color.parseColor("#2E7D32")
+                        );
+
                         actualizarBotonesSegunViaje("");
 
                         if (switchDisponible.isChecked()) {
@@ -1287,6 +1295,8 @@ public class ConductorActivity extends AppCompatActivity
 
                         viajeAceptado = true;
 
+                        txtEstado.setText("🚕 Ocupado");
+
                         txtSolicitud.setText(
                                 "Viaje aceptado"
                         );
@@ -1294,6 +1304,8 @@ public class ConductorActivity extends AppCompatActivity
                     } else if ("en_camino".equalsIgnoreCase(estado)) {
 
                         viajeAceptado = true;
+
+                        txtEstado.setText("🚕 En viaje");
 
                         txtSolicitud.setText(
                                 "Viaje en camino"
