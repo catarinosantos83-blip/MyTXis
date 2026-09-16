@@ -580,7 +580,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        consultarConductoresDisponibles();
 
 
         actualizarEstadoRunnable = new Runnable() {
@@ -1036,6 +1035,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 "CONDUCTORES",
                                 "Lon = " + conductor.getLongitud()
                         );
+
+                        // ==========================================
+                        // CREAR MARCADOR DEL CONDUCTOR
+                        // ==========================================
+
+                        if (mMap != null) {
+
+                            LatLng ubicacionConductor =
+                                    new LatLng(
+                                            conductor.getLatitud(),
+                                            conductor.getLongitud()
+                                    );
+
+                            mMap.addMarker(
+                                    new MarkerOptions()
+                                            .position(ubicacionConductor)
+                                            .title("🚕 " + conductor.getNombre())
+                                            .snippet(
+                                                    conductor.getMarca()
+                                                            + " "
+                                                            + conductor.getModelo()
+                                                            + " | Placa: "
+                                                            + conductor.getPlaca()
+                                            )
+                            );
+
+                            mMap.animateCamera(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                            ubicacionConductor,
+                                            15
+                                    )
+                            );
+                        }
                     }
 
                 } else {
@@ -1063,24 +1095,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
+
         mMap = googleMap;
-
-
 
         this.mMap.setOnMapClickListener(this);
         this.mMap.setOnMapLongClickListener(this);
 
-        LatLng mexico = new LatLng(19.9492195,-99.9978082);
-        mMap.addMarker(new MarkerOptions().position(mexico).title("México"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(mexico));
-
+        consultarConductoresDisponibles();
     }
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
         txtOrigen.setText(""+latLng.latitude);
         txtDestino.setText(""+latLng.longitude);
-
 
     }
 
