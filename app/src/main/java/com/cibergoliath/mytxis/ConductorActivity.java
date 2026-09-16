@@ -177,6 +177,8 @@ public class ConductorActivity extends AppCompatActivity
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
+
+
         }
 
         inicializarComponentes();

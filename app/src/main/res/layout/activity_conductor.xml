@@ -168,6 +168,7 @@
                         android:layout_width="250dp"
                         android:layout_height="wrap_content"
                         android:text="Ir hacia el cliente"
+                        android:backgroundTint="#2196F3"
                         android:layout_marginTop="30dp"/>
 
 
@@ -176,6 +177,7 @@
                         android:layout_width="250dp"
                         android:layout_height="wrap_content"
                         android:text="Aceptar Viaje"
+                        android:backgroundTint="#4CAF50"
                         android:layout_marginTop="20dp"/>
 
                     <Button
@@ -183,6 +185,7 @@
                         android:layout_width="250dp"
                         android:layout_height="wrap_content"
                         android:text="Iniciar Viaje"
+                        android:backgroundTint="#FFB74D"
                         android:layout_marginTop="20dp"/>
 
                     <Button
@@ -190,6 +193,7 @@
                         android:layout_width="250dp"
                         android:layout_height="wrap_content"
                         android:text="Rechazar"
+                        android:backgroundTint="#F44336"
                         android:layout_marginTop="20dp"/>
 
                     <Button
@@ -197,6 +201,7 @@
                         android:layout_width="250dp"
                         android:layout_height="wrap_content"
                         android:text="Finalizar Viaje"
+                        android:backgroundTint="#4CAF50"
                         android:layout_marginTop="20dp"/>
 
                 </LinearLayout>

@@ -9,6 +9,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 import com.cibergoliath.mytxis.models.DirectionsResponse;
 import com.cibergoliath.mytxis.models.PerfilConductorResponse;
+import com.cibergoliath.mytxis.models.ConductorDisponible;
 import java.util.List;
 
 public interface ApiService {
@@ -117,8 +118,11 @@ public interface ApiService {
             @Field("latitud") double latitud,
 
             @Field("longitud") double longitud
-
     );
+
+    @GET("obtener_conductores_disponibles.php")
+    Call<List<ConductorDisponible>> obtenerConductoresDisponibles();
+
     @FormUrlEncoded
     @POST("obtener_perfil_conductor.php")
     Call<PerfilConductorResponse> obtenerPerfilConductor(

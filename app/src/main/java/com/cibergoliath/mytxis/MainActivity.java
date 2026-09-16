@@ -61,6 +61,7 @@ import android.location.Geocoder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import com.cibergoliath.mytxis.models.ConductorDisponible;
 
 
 
@@ -579,6 +580,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        consultarConductoresDisponibles();
+
 
         actualizarEstadoRunnable = new Runnable() {
             @Override
@@ -987,6 +990,75 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         });
 
+    }
+
+    private void consultarConductoresDisponibles() {
+
+        ApiService apiService =
+                RetrofitClient
+                        .getClient()
+                        .create(ApiService.class);
+
+        Call<List<ConductorDisponible>> call =
+                apiService.obtenerConductoresDisponibles();
+
+        call.enqueue(new Callback<List<ConductorDisponible>>() {
+
+            @Override
+            public void onResponse(
+                    Call<List<ConductorDisponible>> call,
+                    Response<List<ConductorDisponible>> response) {
+
+                if (response.isSuccessful()
+                        && response.body() != null) {
+
+                    List<ConductorDisponible> conductores =
+                            response.body();
+
+                    Log.d(
+                            "CONDUCTORES",
+                            "Total = " + conductores.size()
+                    );
+
+                    for (ConductorDisponible conductor : conductores) {
+
+                        Log.d(
+                                "CONDUCTORES",
+                                "Nombre = " + conductor.getNombre()
+                        );
+
+                        Log.d(
+                                "CONDUCTORES",
+                                "Lat = " + conductor.getLatitud()
+                        );
+
+                        Log.d(
+                                "CONDUCTORES",
+                                "Lon = " + conductor.getLongitud()
+                        );
+                    }
+
+                } else {
+
+                    Log.e(
+                            "CONDUCTORES",
+                            "Error HTTP = " + response.code()
+                    );
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    Call<List<ConductorDisponible>> call,
+                    Throwable t) {
+
+                Log.e(
+                        "CONDUCTORES",
+                        "Error de conexión: " + t.getMessage(),
+                        t
+                );
+            }
+        });
     }
 
     @Override
