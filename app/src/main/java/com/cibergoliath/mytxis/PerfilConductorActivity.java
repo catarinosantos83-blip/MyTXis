@@ -88,24 +88,66 @@ public class PerfilConductorActivity extends AppCompatActivity {
 
         btnCerrarSesionConductor.setOnClickListener(v -> {
 
-            getSharedPreferences("sesion", MODE_PRIVATE)
-                    .edit()
-                    .clear()
-                    .apply();
+            btnCerrarSesionConductor.setEnabled(false);
 
-            Intent intent = new Intent(
-                    PerfilConductorActivity.this,
-                    Login.class
-            );
+            String token = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("token", "");
 
-            intent.setFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK |
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK
-            );
+            if (token == null || token.isEmpty()) {
+                finalizarCierreSesion();
+                return;
+            }
 
-            startActivity(intent);
-            finish();
+            ApiService apiService = RetrofitClient
+                    .getClient()
+                    .create(ApiService.class);
 
+            Call<String> call = apiService.cerrarSesion(token);
+
+            call.enqueue(new Callback<String>() {
+
+                @Override
+                public void onResponse(
+                        Call<String> call,
+                        Response<String> response
+                ) {
+
+                    String respuesta = response.body() != null
+                            ? response.body().trim()
+                            : "";
+
+                    if (!response.isSuccessful()
+                            || !respuesta.equalsIgnoreCase("sesion_cerrada")) {
+
+                        Toast.makeText(
+                                PerfilConductorActivity.this,
+                                "No se pudo confirmar la revocación en el servidor. "
+                                        + "Se cerrará la sesión en este teléfono.",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+
+                    finalizarCierreSesion();
+                }
+
+                @Override
+                public void onFailure(
+                        Call<String> call,
+                        Throwable t
+                ) {
+
+                    Toast.makeText(
+                            PerfilConductorActivity.this,
+                            "Sin conexión: se cerrará la sesión en este teléfono, "
+                                    + "pero no se pudo confirmar el cierre en el servidor.",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    finalizarCierreSesion();
+                }
+            });
         });
 
 
@@ -169,6 +211,35 @@ public class PerfilConductorActivity extends AppCompatActivity {
 
         });
 
+    }
+
+    private void finalizarCierreSesion() {
+
+        // Actualizar el estado local del conductor
+        getSharedPreferences("conductor", MODE_PRIVATE)
+                .edit()
+                .putBoolean("disponible", false)
+                .apply();
+
+        // Borrar los datos de la sesión local
+        getSharedPreferences("sesion", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
+
+        // Regresar a la pantalla de inicio de sesión
+        Intent intent = new Intent(
+                PerfilConductorActivity.this,
+                Login.class
+        );
+
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
     }
 
 

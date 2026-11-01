@@ -101,6 +101,7 @@ public class UsuarioActivity extends AppCompatActivity {
                 startActivity(new Intent(
                         UsuarioActivity.this,
                         ActividadesActivity.class));
+                finish();
 
                 return true;
 

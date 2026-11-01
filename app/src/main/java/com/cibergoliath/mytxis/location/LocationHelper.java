@@ -37,6 +37,7 @@ public class LocationHelper {
     @SuppressLint("MissingPermission")
     public void iniciarActualizacionesUbicacion(
             @NonNull OnLocationResult listener) {
+        detenerActualizacionesUbicacion();
 
         LocationRequest locationRequest =
                 new LocationRequest.Builder(

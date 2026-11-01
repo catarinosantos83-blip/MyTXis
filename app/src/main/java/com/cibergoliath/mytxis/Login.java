@@ -111,94 +111,150 @@ public class Login extends AppCompatActivity {
                     .getClient()
                     .create(ApiService.class);
 
-            Call<String> call = apiService.loginUsuario(
+            Call<LoginResponse> call = apiService.loginSeguro(
                     email,
                     pass
             );
 
-            call.enqueue(new Callback<String>() {
+            call.enqueue(new Callback<LoginResponse>() {
+
                 @Override
-                public void onResponse(Call<String> call,
-                                       Response<String> response) {
+                public void onResponse(
+                        Call<LoginResponse> call,
+                        Response<LoginResponse> response) {
 
-                    if(response.isSuccessful() &&
-                            response.body() != null) {
+                    if (!response.isSuccessful()) {
 
-                        String resultado = response.body().trim();
+                        String mensaje =
+                                "No fue posible iniciar sesión. Código: "
+                                        + response.code();
 
-                        if(resultado.equalsIgnoreCase("admin")) {
+                        try {
+                            if (response.errorBody() != null) {
 
-                            getSharedPreferences("sesion", MODE_PRIVATE)
-                                    .edit()
-                                    .putBoolean("logueado", true)
-                                    .putString("tipo_usuario", "admin")
-                                    .putString("email", email)
-                                    .apply();
+                                LoginResponse error =
+                                        new com.google.gson.Gson().fromJson(
+                                                response.errorBody().string(),
+                                                LoginResponse.class
+                                        );
 
-                            Intent intent = new Intent(
-                                    Login.this,
-                                    MainAdminActivity.class
-                            );
-
-                            startActivity(intent);
-                            finish();
-
+                                if (error != null
+                                        && error.getMensaje() != null) {
+                                    mensaje = error.getMensaje();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Se conserva el mensaje HTTP como alternativa.
                         }
-                        else if(resultado.equalsIgnoreCase("cliente")) {
 
-                            getSharedPreferences("sesion", MODE_PRIVATE)
-                                    .edit()
-                                    .putBoolean("logueado", true)
-                                    .putString("tipo_usuario", "cliente")
-                                    .putString("email", email)
-                                    .apply();
+                        Toast.makeText(
+                                Login.this,
+                                mensaje,
+                                Toast.LENGTH_LONG
+                        ).show();
 
-                            Intent intent = new Intent(
-                                    Login.this,
-                                    MainActivity.class
-                            );
-
-                            startActivity(intent);
-                            finish();
-
-                        }
-                        else if(resultado.equalsIgnoreCase("conductor")) {
-
-                            getSharedPreferences("sesion", MODE_PRIVATE)
-                                    .edit()
-                                    .putBoolean("logueado", true)
-                                    .putString("tipo_usuario", "conductor")
-                                    .putString("email", email)
-                                    .apply();
-
-                            Intent intent = new Intent(
-                                    Login.this,
-                                    ConductorActivity.class
-                            );
-
-
-                            startActivity(intent);
-                            finish();
-
-                        }
-                        else {
-
-                            Toast.makeText(
-                                    Login.this,
-                                    resultado,
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
+                        return;
                     }
+
+                    LoginResponse resultado = response.body();
+
+                    if (resultado == null || !resultado.isSuccess()) {
+
+                        String mensaje = resultado != null
+                                && resultado.getMensaje() != null
+                                ? resultado.getMensaje()
+                                : "Respuesta inválida del servidor";
+
+                        Toast.makeText(
+                                Login.this,
+                                mensaje,
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    String tipoUsuario = resultado.getTipoUsuario();
+                    String token = resultado.getToken();
+
+                    if (tipoUsuario == null
+                            || token == null
+                            || token.trim().isEmpty()) {
+
+                        Toast.makeText(
+                                Login.this,
+                                "El servidor no devolvió una sesión válida",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    boolean esAdmin =
+                            tipoUsuario.equalsIgnoreCase("admin");
+
+                    boolean esCliente =
+                            tipoUsuario.equalsIgnoreCase("cliente");
+
+                    boolean esConductor =
+                            tipoUsuario.equalsIgnoreCase("conductor");
+
+                    if (!esAdmin && !esCliente && !esConductor) {
+
+                        Toast.makeText(
+                                Login.this,
+                                "Tipo de usuario no reconocido",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    // Guardar los datos de la sesión y el token.
+                    getSharedPreferences("sesion", MODE_PRIVATE)
+                            .edit()
+                            .putBoolean("logueado", true)
+                            .putString("tipo_usuario", tipoUsuario)
+                            .putString("email", email)
+                            .putString("token", token)
+                            .apply();
+
+                    Intent intent;
+
+                    if (esAdmin) {
+
+                        intent = new Intent(
+                                Login.this,
+                                MainAdminActivity.class
+                        );
+
+                    } else if (esCliente) {
+
+                        intent = new Intent(
+                                Login.this,
+                                MainActivity.class
+                        );
+
+                    } else {
+
+                        intent = new Intent(
+                                Login.this,
+                                ConductorActivity.class
+                        );
+                    }
+
+                    startActivity(intent);
+                    finish();
                 }
 
                 @Override
-                public void onFailure(Call<String> call,
-                                      Throwable t) {
+                public void onFailure(
+                        Call<LoginResponse> call,
+                        Throwable t) {
 
                     Toast.makeText(
                             Login.this,
-                            "Error: " + t.getMessage(),
+                            "Error de conexión: " + t.getMessage(),
                             Toast.LENGTH_LONG
                     ).show();
                 }

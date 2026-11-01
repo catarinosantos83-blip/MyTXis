@@ -122,6 +122,7 @@ public class ConductorActivity extends AppCompatActivity
 
     private boolean viajeAceptado = false;
     private boolean mostrandoSolicitudes = false;
+    private boolean actualizandoDisponibilidadServidor = false;
 
 
     //inicia el segundo oncreate refactorizado//
@@ -303,45 +304,192 @@ public class ConductorActivity extends AppCompatActivity
     }
     private void configurarSwitch() {
 
-        switchDisponible.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        switchDisponible.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> {
 
-            getSharedPreferences("conductor", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("disponible", isChecked)
-                    .apply();
+                    if (actualizandoDisponibilidadServidor) {
+                        return;
+                    }
 
-            if (isChecked) {
+                    boolean estadoAnterior = !isChecked;
 
-                txtEstado.setText("🟢 Disponible");
-                txtEstado.setTextColor(Color.parseColor("#2E7D32"));
+                    String token = getSharedPreferences(
+                            "sesion",
+                            MODE_PRIVATE
+                    ).getString("token", "");
 
-                btnActualizar.setEnabled(true);
-                btnAceptar.setEnabled(true);
-                btnRechazar.setEnabled(true);
-                btnIniciarViaje.setEnabled(true);
-                btnFinalizarViaje.setEnabled(true);
+                    if (token.isEmpty()) {
 
-                iniciarActualizacionUbicacion();
-                iniciarBusquedaViajes();
+                        restaurarEstadoSwitch(estadoAnterior);
 
-            } else {
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "La sesión no tiene un token válido. "
+                                        + "Cierra sesión y vuelve a ingresar.",
+                                Toast.LENGTH_LONG
+                        ).show();
 
-                txtEstado.setText("🔴 Desconectado");
-                txtEstado.setTextColor(Color.parseColor("#D32F2F"));
+                        return;
+                    }
 
-                btnActualizar.setEnabled(false);
-                btnAceptar.setEnabled(false);
-                btnRechazar.setEnabled(false);
-                btnIniciarViaje.setEnabled(false);
-                btnFinalizarViaje.setEnabled(false);
+                    actualizandoDisponibilidadServidor = true;
+                    switchDisponible.setEnabled(false);
 
-                detenerActualizacionUbicacion();
-                detenerBusquedaViajes();
+                    ApiService apiService = RetrofitClient
+                            .getClient()
+                            .create(ApiService.class);
 
-            }
+                    Call<String> call =
+                            apiService.actualizarDisponibilidadConductor(
+                                    token,
+                                    isChecked ? 1 : 0
+                            );
 
-        });
+                    call.enqueue(new Callback<String>() {
 
+                        @Override
+                        public void onResponse(
+                                Call<String> call,
+                                Response<String> response) {
+
+                            String respuesta = "";
+
+                            try {
+
+                                if (response.body() != null) {
+
+                                    respuesta = response.body().trim();
+
+                                } else if (response.errorBody() != null) {
+
+                                    respuesta =
+                                            response.errorBody().string().trim();
+                                }
+
+                            } catch (Exception e) {
+
+                                Log.e(
+                                        TAG,
+                                        "Error leyendo respuesta de disponibilidad",
+                                        e
+                                );
+                            }
+
+                            if (response.isSuccessful()
+                                    && respuesta.equalsIgnoreCase("actualizado")) {
+
+                                actualizandoDisponibilidadServidor = false;
+                                switchDisponible.setEnabled(true);
+
+                                getSharedPreferences(
+                                        "conductor",
+                                        MODE_PRIVATE
+                                ).edit()
+                                        .putBoolean("disponible", isChecked)
+                                        .apply();
+
+                                if (isChecked) {
+
+                                    txtEstado.setText("🟢 Disponible");
+                                    txtEstado.setTextColor(
+                                            Color.parseColor("#2E7D32")
+                                    );
+
+                                    btnActualizar.setEnabled(true);
+                                    btnAceptar.setEnabled(true);
+                                    btnRechazar.setEnabled(true);
+                                    btnIniciarViaje.setEnabled(true);
+                                    btnFinalizarViaje.setEnabled(true);
+
+                                    iniciarActualizacionUbicacion();
+                                    iniciarBusquedaViajes();
+
+                                } else {
+
+                                    txtEstado.setText("🔴 Desconectado");
+                                    txtEstado.setTextColor(
+                                            Color.parseColor("#D32F2F")
+                                    );
+
+                                    btnActualizar.setEnabled(false);
+                                    btnAceptar.setEnabled(false);
+                                    btnRechazar.setEnabled(false);
+                                    btnIniciarViaje.setEnabled(false);
+                                    btnFinalizarViaje.setEnabled(false);
+
+                                    detenerActualizacionUbicacion();
+                                    detenerBusquedaViajes();
+                                }
+
+                                Log.d(
+                                        TAG,
+                                        "Disponibilidad guardada en el servidor: "
+                                                + isChecked
+                                );
+
+                            } else {
+
+                                restaurarEstadoSwitch(estadoAnterior);
+
+                                String mensaje =
+                                        "No se pudo actualizar la disponibilidad.";
+
+                                if (response.code() == 401) {
+
+                                    mensaje = "La sesión expiró o no es válida. "
+                                            + "Cierra sesión y vuelve a ingresar.";
+
+                                } else if (respuesta.equalsIgnoreCase(
+                                        "viaje_activo")) {
+
+                                    mensaje = "No puedes conectarte como disponible "
+                                            + "mientras tienes un viaje activo.";
+
+                                } else if (!respuesta.isEmpty()) {
+
+                                    mensaje += " Respuesta: " + respuesta;
+                                }
+
+                                Toast.makeText(
+                                        ConductorActivity.this,
+                                        mensaje,
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(
+                                Call<String> call,
+                                Throwable t) {
+
+                            restaurarEstadoSwitch(estadoAnterior);
+
+                            Toast.makeText(
+                                    ConductorActivity.this,
+                                    "No fue posible contactar al servidor. "
+                                            + "Verifica la conexión.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            Log.e(
+                                    TAG,
+                                    "Error actualizando disponibilidad",
+                                    t
+                            );
+                        }
+                    });
+                });
+    }
+
+    private void restaurarEstadoSwitch(boolean estadoAnterior) {
+
+        actualizandoDisponibilidadServidor = true;
+
+        switchDisponible.setChecked(estadoAnterior);
+
+        actualizandoDisponibilidadServidor = false;
+        switchDisponible.setEnabled(true);
     }
 
 
@@ -461,17 +609,38 @@ public class ConductorActivity extends AppCompatActivity
                 return;
             }
 
+            // Recuperar token de la sesión
+            String token = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("token", "");
+
+            if (token == null || token.isEmpty()) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "La sesión no es válida. Inicia sesión nuevamente.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                return;
+            }
+
             ApiService apiService = RetrofitClient
                     .getClient()
                     .create(ApiService.class);
 
-            Call<String> call = apiService.irHaciaCliente(viajeId);
+            Call<String> call = apiService.irHaciaCliente(
+                    viajeId,
+                    token
+            );
 
             call.enqueue(new Callback<String>() {
 
                 @Override
-                public void onResponse(Call<String> call,
-                                       Response<String> response) {
+                public void onResponse(
+                        Call<String> call,
+                        Response<String> response) {
 
                     if (response.isSuccessful()
                             && response.body() != null
@@ -486,12 +655,21 @@ public class ConductorActivity extends AppCompatActivity
                                 "Ahora vas hacia el cliente",
                                 Toast.LENGTH_SHORT
                         ).show();
+
+                    } else {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "No fue posible actualizar el viaje",
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<String> call,
-                                      Throwable t) {
+                public void onFailure(
+                        Call<String> call,
+                        Throwable t) {
 
                     Toast.makeText(
                             ConductorActivity.this,
@@ -500,9 +678,7 @@ public class ConductorActivity extends AppCompatActivity
                     ).show();
                 }
             });
-
         });
-
     }
 
     private void verificarViajesPendientes() {
@@ -768,14 +944,25 @@ public class ConductorActivity extends AppCompatActivity
                     .create(ApiService.class);
 
 
-            String conductorEmail =
-                    getSharedPreferences("sesion", MODE_PRIVATE)
-                            .getString("email", "");
+            String token = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("token", "");
+
+            if (token == null || token.isEmpty()) {
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "Tu sesión no es válida. Inicia sesión nuevamente.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                return;
+            }
 
             Call<String> call =
                     apiService.aceptarViaje(
                             viajeId,
-                            conductorEmail
+                            token
                     );
 
             call.enqueue(new Callback<String>() {
@@ -855,10 +1042,10 @@ public class ConductorActivity extends AppCompatActivity
 
 
     private void configurarBotonIniciarViaje() {
+
         btnIniciarViaje.setOnClickListener(v -> {
 
             if (viajeId == 0) {
-
                 Toast.makeText(
                         ConductorActivity.this,
                         "Primero acepte un viaje",
@@ -868,17 +1055,37 @@ public class ConductorActivity extends AppCompatActivity
                 return;
             }
 
+            // Recuperar token de la sesión
+            String token = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("token", "");
+
+            if (token == null || token.isEmpty()) {
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "La sesión no es válida. Inicia sesión nuevamente.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                return;
+            }
+
             ApiService apiService = RetrofitClient
                     .getClient()
                     .create(ApiService.class);
 
-            Call<String> call = apiService.iniciarViaje(viajeId);
+            Call<String> call = apiService.iniciarViaje(
+                    viajeId,
+                    token
+            );
 
             call.enqueue(new Callback<String>() {
 
                 @Override
-                public void onResponse(Call<String> call,
-                                       Response<String> response) {
+                public void onResponse(
+                        Call<String> call,
+                        Response<String> response) {
 
                     if (response.isSuccessful()
                             && response.body() != null
@@ -893,12 +1100,20 @@ public class ConductorActivity extends AppCompatActivity
                                 "Viaje iniciado",
                                 Toast.LENGTH_SHORT
                         ).show();
+
+                    } else {
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "No fue posible iniciar el viaje",
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<String> call,
-                                      Throwable t) {
+                public void onFailure(
+                        Call<String> call,
+                        Throwable t) {
 
                     Toast.makeText(
                             ConductorActivity.this,
@@ -907,12 +1122,11 @@ public class ConductorActivity extends AppCompatActivity
                     ).show();
                 }
             });
-
         });
-
     }
 
     private void configurarBotonFinalizarViaje() {
+
         btnFinalizarViaje.setOnClickListener(v -> {
 
             if (viajeId == 0) {
@@ -926,17 +1140,38 @@ public class ConductorActivity extends AppCompatActivity
                 return;
             }
 
+            // Recuperar token de la sesión
+            String token = getSharedPreferences(
+                    "sesion",
+                    MODE_PRIVATE
+            ).getString("token", "");
+
+            if (token == null || token.isEmpty()) {
+
+                Toast.makeText(
+                        ConductorActivity.this,
+                        "La sesión no es válida. Inicia sesión nuevamente.",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                return;
+            }
+
             ApiService apiService = RetrofitClient
                     .getClient()
                     .create(ApiService.class);
 
-            Call<String> call = apiService.finalizarViaje(viajeId);
+            Call<String> call = apiService.finalizarViaje(
+                    viajeId,
+                    token
+            );
 
             call.enqueue(new Callback<String>() {
 
                 @Override
-                public void onResponse(Call<String> call,
-                                       Response<String> response) {
+                public void onResponse(
+                        Call<String> call,
+                        Response<String> response) {
 
                     if (response.isSuccessful()
                             && response.body() != null
@@ -944,7 +1179,6 @@ public class ConductorActivity extends AppCompatActivity
 
                         limpiarPantallaViaje();
 
-                        // El conductor vuelve a estar disponible
                         txtEstado.setText("🟢 Disponible");
                         txtEstado.setTextColor(
                                 Color.parseColor("#2E7D32")
@@ -953,10 +1187,8 @@ public class ConductorActivity extends AppCompatActivity
                         actualizarBotonesSegunViaje("");
 
                         if (switchDisponible.isChecked()) {
-
                             detenerBusquedaViajes();
                             iniciarBusquedaViajes();
-
                         }
 
                         Toast.makeText(
@@ -964,12 +1196,21 @@ public class ConductorActivity extends AppCompatActivity
                                 "Viaje finalizado",
                                 Toast.LENGTH_SHORT
                         ).show();
+
+                    } else {
+
+                        Toast.makeText(
+                                ConductorActivity.this,
+                                "No fue posible finalizar el viaje",
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<String> call,
-                                      Throwable t) {
+                public void onFailure(
+                        Call<String> call,
+                        Throwable t) {
 
                     Toast.makeText(
                             ConductorActivity.this,
@@ -978,9 +1219,7 @@ public class ConductorActivity extends AppCompatActivity
                     ).show();
                 }
             });
-
         });
-
     }
 
     private void configurarBotonRechazar() {
@@ -1125,17 +1364,27 @@ public class ConductorActivity extends AppCompatActivity
         });
     }
 
-    private void enviarUbicacionAlServidor(double latitud, double longitud) {
+    private void enviarUbicacionAlServidor(
+            double latitud,
+            double longitud
+    ) {
 
-        String email = getSharedPreferences("sesion", MODE_PRIVATE)
-                .getString("email", "");
+        String token = getSharedPreferences(
+                "sesion",
+                MODE_PRIVATE
+        ).getString("token", "");
+
+        if (token == null || token.isEmpty()) {
+            return;
+        }
 
         ApiService apiService =
-                RetrofitClient.getClient().create(ApiService.class);
+                RetrofitClient.getClient()
+                        .create(ApiService.class);
 
         Call<String> call =
                 apiService.actualizarUbicacionConductor(
-                        email,
+                        token,
                         latitud,
                         longitud
                 );
@@ -1143,31 +1392,27 @@ public class ConductorActivity extends AppCompatActivity
         call.enqueue(new Callback<String>() {
 
             @Override
-            public void onResponse(Call<String> call,
-                                   Response<String> response) {
-
+            public void onResponse(
+                    Call<String> call,
+                    Response<String> response
+            ) {
                 if (response.isSuccessful()) {
-
                     // Ubicación enviada correctamente
-
                 }
-
             }
 
             @Override
-            public void onFailure(Call<String> call,
-                                  Throwable t) {
-
+            public void onFailure(
+                    Call<String> call,
+                    Throwable t
+            ) {
                 Toast.makeText(
                         ConductorActivity.this,
                         t.getMessage(),
                         Toast.LENGTH_LONG
                 ).show();
-
             }
-
         });
-
     }
 
     private void iniciarActualizacionUbicacion() {
@@ -1248,9 +1493,16 @@ public class ConductorActivity extends AppCompatActivity
 
     private void cargarViajeAceptado() {
 
-        String conductorEmail =
-                getSharedPreferences("sesion", MODE_PRIVATE)
-                        .getString("email", "");
+        // Recuperar token de la sesión
+        String token = getSharedPreferences(
+                "sesion",
+                MODE_PRIVATE
+        ).getString("token", "");
+
+        if (token == null || token.isEmpty()) {
+            Log.e(TAG, "No existe un token de sesión válido");
+            return;
+        }
 
         ApiService apiService =
                 RetrofitClient
@@ -1258,7 +1510,7 @@ public class ConductorActivity extends AppCompatActivity
                         .create(ApiService.class);
 
         Call<ViajeResponse> call =
-                apiService.obtenerViajeAceptado(conductorEmail);
+                apiService.obtenerViajeAceptado(token);
 
         call.enqueue(new Callback<ViajeResponse>() {
 
@@ -1274,21 +1526,17 @@ public class ConductorActivity extends AppCompatActivity
 
                     Log.d(
                             TAG,
-                            "[ACEPTADO] Nombre = '"
-                                    + viaje.getNombre()
+                            "[ACEPTADO] Nombre = '" + viaje.getNombre()
                     );
 
                     Log.d(
                             TAG,
-                            "[ACEPTADO] ID = "
-                                    + viaje.getId()
+                            "[ACEPTADO] ID = " + viaje.getId()
                     );
 
                     Log.d(
                             TAG,
-                            "[ACEPTADO] Estado = '"
-                                    + viaje.getEstado()
-                                    + "'"
+                            "[ACEPTADO] Estado = '" + viaje.getEstado() + "'"
                     );
 
                     String estado = viaje.getEstado();
@@ -1299,9 +1547,15 @@ public class ConductorActivity extends AppCompatActivity
 
                         txtEstado.setText("🚕 Ocupado");
 
-                        txtSolicitud.setText(
-                                "Viaje aceptado"
-                        );
+                        txtSolicitud.setText("Viaje aceptado");
+
+                    } else if ("hacia_cliente".equalsIgnoreCase(estado)) {
+
+                        viajeAceptado = true;
+
+                        txtEstado.setText("🚕 Ocupado");
+
+                        txtSolicitud.setText("Conductor en camino");
 
                     } else if ("en_camino".equalsIgnoreCase(estado)) {
 
@@ -1309,9 +1563,7 @@ public class ConductorActivity extends AppCompatActivity
 
                         txtEstado.setText("🚕 En viaje");
 
-                        txtSolicitud.setText(
-                                "Viaje en camino"
-                        );
+                        txtSolicitud.setText("Viaje en camino");
 
                     } else {
 
@@ -1325,7 +1577,6 @@ public class ConductorActivity extends AppCompatActivity
                     actualizarBotonesSegunViaje(
                             viaje.getEstado()
                     );
-
                 }
             }
 

@@ -61,7 +61,13 @@ import android.location.Geocoder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import com.google.android.gms.maps.model.Marker;
 import com.cibergoliath.mytxis.models.ConductorDisponible;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Iterator;
 
 
 
@@ -78,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView txtEstadoViaje;
 
     GoogleMap mMap;
+    private Map<String, Marker> marcadoresConductores = new HashMap<>();
     BottomNavigationView bottomNavigation;
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -144,6 +151,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
 
                     });
+    private static final long INTERVALO_CONDUCTORES_MS = 15000;
+
+    private final Handler handlerConductores =
+            new Handler(Looper.getMainLooper());
+
+    private final Runnable actualizarConductoresRunnable =
+            new Runnable() {
+                @Override
+                public void run() {
+                    if (mMap != null) {
+                        consultarConductoresDisponibles();
+
+                        handlerConductores.postDelayed(
+                                this,
+                                INTERVALO_CONDUCTORES_MS
+                        );
+                    }
+                }
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -596,6 +622,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        BottomNavigationView bottomNavigation =
+                findViewById(R.id.bottomNavigation);
+
+        bottomNavigation.setSelectedItemId(R.id.nav_home);
+
+        iniciarActualizacionConductores();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        detenerActualizacionConductores();
+    }
+
     private void consultarConductorAsignado() {
 
 
@@ -1018,6 +1063,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             "CONDUCTORES",
                             "Total = " + conductores.size()
                     );
+                    Set<String> conductoresActuales = new HashSet<>();
+
+                    for (ConductorDisponible conductor : conductores) {
+                        conductoresActuales.add(conductor.getEmail());
+                    }
 
                     for (ConductorDisponible conductor : conductores) {
 
@@ -1048,27 +1098,73 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                             conductor.getLongitud()
                                     );
 
-                            mMap.addMarker(
-                                    new MarkerOptions()
-                                            .position(ubicacionConductor)
-                                            .title("🚕 " + conductor.getNombre())
-                                            .snippet(
-                                                    conductor.getMarca()
-                                                            + " "
-                                                            + conductor.getModelo()
-                                                            + " | Placa: "
-                                                            + conductor.getPlaca()
-                                            )
-                            );
+                            Marker marcador = marcadoresConductores.get(conductor.getEmail());
 
-                            mMap.animateCamera(
-                                    CameraUpdateFactory.newLatLngZoom(
-                                            ubicacionConductor,
-                                            15
-                                    )
+                            if (marcador == null) {
+
+                                marcador = mMap.addMarker(
+                                        new MarkerOptions()
+                                                .position(ubicacionConductor)
+                                                .title("🚕 " + conductor.getNombre())
+                                                .snippet(
+                                                        conductor.getMarca()
+                                                                + " "
+                                                                + conductor.getModelo()
+                                                                + " | Placa: "
+                                                                + conductor.getPlaca()
+                                                )
+                                );
+
+                                Log.d(
+                                        "CONDUCTORES",
+                                        "Marcador creado = " + (marcador != null)
+                                );
+
+                                marcadoresConductores.put(
+                                        conductor.getEmail(),
+                                        marcador
+                                );
+
+                            } else {
+
+                                marcador.setPosition(ubicacionConductor);
+                            }
+
+
+                        }
+                    }
+
+                    // ==========================================
+                    // ELIMINAR MARCADORES DE CONDUCTORES
+                    // QUE YA NO ESTÁN DISPONIBLES
+                    // ==========================================
+
+                    Iterator<Map.Entry<String, Marker>> iterator =
+                            marcadoresConductores.entrySet().iterator();
+
+                    while (iterator.hasNext()) {
+
+                        Map.Entry<String, Marker> entrada =
+                                iterator.next();
+
+                        String email = entrada.getKey();
+                        Marker marcador = entrada.getValue();
+
+                        if (!conductoresActuales.contains(email)) {
+
+                            if (marcador != null) {
+                                marcador.remove();
+                            }
+
+                            iterator.remove();
+
+                            Log.d(
+                                    "CONDUCTORES",
+                                    "Marcador eliminado = " + email
                             );
                         }
                     }
+
 
                 } else {
 
@@ -1078,6 +1174,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     );
                 }
             }
+
+
+            private void iniciarActualizacionConductores() {
+                handlerConductores.removeCallbacks(
+                        actualizarConductoresRunnable
+                );
+
+                if (mMap != null) {
+                    consultarConductoresDisponibles();
+
+                    handlerConductores.postDelayed(
+                            actualizarConductoresRunnable,
+                            INTERVALO_CONDUCTORES_MS
+                    );
+                }
+            }
+
+            private void detenerActualizacionConductores() {
+                handlerConductores.removeCallbacks(
+                        actualizarConductoresRunnable
+                );
+            }
+
 
             @Override
             public void onFailure(
@@ -1101,8 +1220,40 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.mMap.setOnMapClickListener(this);
         this.mMap.setOnMapLongClickListener(this);
 
-        consultarConductoresDisponibles();
+        LatLng mexico = new LatLng(19.9492195, -99.9978082);
+
+        mMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                        mexico,
+                        10
+                )
+        );
+
+        iniciarActualizacionConductores();
     }
+
+    private void iniciarActualizacionConductores() {
+
+        handlerConductores.removeCallbacks(
+                actualizarConductoresRunnable
+        );
+
+        if (mMap != null) {
+
+            consultarConductoresDisponibles();
+
+            handlerConductores.postDelayed(
+                    actualizarConductoresRunnable,
+                    INTERVALO_CONDUCTORES_MS
+            );
+        }
+    }
+    private void detenerActualizacionConductores() {
+        handlerConductores.removeCallbacks(
+                actualizarConductoresRunnable
+        );
+    }
+
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {

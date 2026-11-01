@@ -127,6 +127,7 @@ public class ActividadesActivity extends AppCompatActivity {
                 );
 
                 startActivity(intent);
+                finish();
                 return true;
             }
 

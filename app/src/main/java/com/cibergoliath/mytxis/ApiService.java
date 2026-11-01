@@ -31,6 +31,13 @@ public interface ApiService {
     );
 
     @FormUrlEncoded
+    @POST("login_seguro.php")
+    Call<LoginResponse> loginSeguro(
+            @Field("email") String email,
+            @Field("pass") String pass
+    );
+
+    @FormUrlEncoded
     @POST("actualizar_tipo_usuario.php")
     Call<String> actualizarTipoUsuario(
             @Field("email") String email
@@ -54,7 +61,7 @@ public interface ApiService {
     @POST("aceptar_viaje.php")
     Call<String> aceptarViaje(
             @Field("id") int id,
-            @Field("conductor_email") String conductorEmail
+            @Field("token") String token
     );
 
     @FormUrlEncoded
@@ -76,19 +83,22 @@ public interface ApiService {
     @FormUrlEncoded
     @POST("actualizar_estado_en_camino.php")
     Call<String> iniciarViaje(
-            @Field("id") int id
+            @Field("id") int id,
+            @Field("token") String token
     );
 
     @FormUrlEncoded
     @POST("ir_hacia_cliente.php")
     Call<String> irHaciaCliente(
-            @Field("id") int id
+            @Field("id") int id,
+            @Field("token") String token
     );
 
     @FormUrlEncoded
     @POST("actualizar_estado_finalizado.php")
     Call<String> finalizarViaje(
-            @Field("id") int id
+            @Field("id") int id,
+            @Field("token") String token
     );
 
     @FormUrlEncoded
@@ -112,12 +122,15 @@ public interface ApiService {
     @FormUrlEncoded
     @POST("actualizar_ubicacion_conductor.php")
     Call<String> actualizarUbicacionConductor(
-
-            @Field("conductor_email") String conductorEmail,
-
+            @Field("token") String token,
             @Field("latitud") double latitud,
-
             @Field("longitud") double longitud
+    );
+    @FormUrlEncoded
+    @POST("actualizar_disponibilidad_conductor.php")
+    Call<String> actualizarDisponibilidadConductor(
+            @Field("token") String token,
+            @Field("disponible") int disponible
     );
 
     @GET("obtener_conductores_disponibles.php")
@@ -132,7 +145,7 @@ public interface ApiService {
     @FormUrlEncoded
     @POST("obtener_viaje_aceptado.php")
     Call<ViajeResponse> obtenerViajeAceptado(
-            @Field("conductor_email") String conductorEmail
+            @Field("token") String token
     );
 
     @FormUrlEncoded
@@ -142,6 +155,9 @@ public interface ApiService {
             @Field("conductor_email") String conductorEmail
     );
 
+    @FormUrlEncoded
     @POST("cerrar_sesion.php")
-    Call<String> logout();
+    Call<String> cerrarSesion(
+            @Field("token") String token
+    );
 }
